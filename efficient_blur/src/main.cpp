@@ -20,11 +20,12 @@ int main()
 		 5, 6, 7, 8, 
 		 9,10,11,12, 
 		 13,14,15,16,};
-	int y[N * N] = { 0 };
+	int y[N * N] = { }; // Intermediate buffer
+	int z[N * N] = { };
 
 	auto lin = [](int i, int j, int N) -> int { return i * N + j; };
 
-	int count = 0;
+	// Do conv across rows and write output transposed
 	for (int i = 0; i < N; ++i)
 	{
 		for (int j = 0; j < N; ++j)
@@ -36,19 +37,45 @@ int main()
 				if (kdx >= 0 && kdx < N)
 					sum += x[lin(i, kdx, N)];
 			}
-			y[lin(i,j,N)] = sum;
-			//cout << y[count] << "\t";
-			//count++;
+			y[lin(j,i,N)] = sum;
 		}
 		cout << "\n";
 	}
 	cout << "\n";
-	
+
 	// Look at entire intermediate matrix
+	cout << "Intermediate buffer:\n";
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < N; j++)
-			cout << y[lin(i,j,N)] << "\t";
+			cout << y[lin(i, j, N)] << "\t";
+		cout << "\n";
+	}
+	cout << "\n";
+
+	// Do conv down cols (across rows of transposed matrix) and write transposed
+	for (int i = 0; i < N; ++i)
+	{
+		for (int j = 0; j < N; ++j)
+		{
+			int sum = 0;
+			for (int k = 0; k < K; ++k)
+			{
+				int kdx = j + k;
+				if (kdx >= 0 && kdx < N)
+					sum += y[lin(i, kdx, N)];
+			}
+			z[lin(j, i, N)] = sum;
+		}
+		cout << "\n";
+	}
+	
+	// Look at entire intermediate matrix
+	cout << "final output:\n";
+	for (int i = 0; i < N; i++)
+	{
+		for (int j = 0; j < N; j++)
+			cout << z[lin(i,j,N)] << "\t";
 		cout << "\n";
 	}
 	cout << "\n";
