@@ -99,7 +99,10 @@ namespace two_D
 
 		// Do conv
 		ArrStruct y = conv(x_zp.arr);
-		print("After conv", y.arr);
+		print("After conv (stage-1)", y.arr);
+		ArrStruct_zp y_zp = pad(y.arr);
+		ArrStruct z = conv(y_zp.arr);
+		print("After conv (stage-2)", z.arr);
 
 		getchar();
 	}
