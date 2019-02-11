@@ -28,8 +28,8 @@ namespace two_D
 		cout << "\n";
 	}
 	// - - - - - - - - - - - - - - - - 
-	template <size_t rows, size_t cols>
-	ArrStruct pad(int(&x)[rows][cols])
+	template <size_t rows, size_t cols, typename T>
+	ArrStruct pad(T(&x)[rows][cols])
 	{
 		ArrStruct s = {};
 		for (size_t n1 = P; n1 != Q - P; n1++)
