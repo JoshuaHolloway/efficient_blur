@@ -10,8 +10,14 @@ namespace two_D
 	constexpr size_t P = K / 2;		// Zero-padding on each side
 	constexpr size_t Q = N + 2 * P; // Size of zero-padded in each dim
 	// - - - - - - - - - - - - - - - - 
-	struct ArrStruct { int arr[Q][Q]; };
-	// - - - - - - - - - - - - - - - - 
+	
+	// L1 cache-line is 64-Bytes
+	__declspec(align(64))
+		struct ArrStruct_zp { int arr[Q][Q]; };
+
+	__declspec(align(64))
+		struct ArrStruct { int arr[N][N]; };
+	
 	template <size_t rows, size_t cols>
 	void print(std::string str, int(&array)[rows][cols])
 	{
@@ -29,13 +35,51 @@ namespace two_D
 	}
 	// - - - - - - - - - - - - - - - - 
 	template <size_t rows, size_t cols, typename T>
-	ArrStruct pad(T(&x)[rows][cols])
+	ArrStruct_zp pad(T(&x)[rows][cols])
 	{
-		ArrStruct s = {};
-		for (size_t n1 = P; n1 != Q - P; n1++)
-			for (size_t n2 = P; n2 != Q - P; n2++)
+		ArrStruct_zp s = {};
+		for (size_t n1 = P; n1 != Q - P; ++n1)
+			for (size_t n2 = P; n2 != Q - P; ++n2)
 				s.arr[n1][n2] = x[n1 - P][n2 - P];
 		return s;
+	}
+	// - - - - - - - - - - - - - - - -
+	template <size_t rows, size_t cols, typename T>
+	ArrStruct conv(T(&x_zp)[rows][cols])
+	{
+		// 1D-conv of (1xK) box-filter with (1xN_) signal
+		// Write output in transposed form
+		// MATLAB: 
+		//   for i = 1:N_
+		//      y(:, i) = conv(x(i, :), h, 'same')';
+		//   end
+		
+		// Do Convolution
+		ArrStruct y = {};
+		int y_temp[4][4] = {};
+
+		// 1D-conv (row-vector)
+		for (size_t n1 = P; n1 < Q-P; n1++)
+		{
+			cout << "===========================\n";
+			cout << "n1 = " << n1 << "\n";
+			cout << "===========================\n";
+			for (size_t n2 = 0; n2 < 4; n2++)
+			{
+				int sum = 0;
+				for (size_t k2 = 0; k2 != K; k2++)
+				{
+					sum += x_zp[n1][n2 + k2];
+					cout << "n2=" << n2 << " k2=" << k2 << " [n2+k2]=" << n2 + k2;
+					cout << "  (n1,n2):(" << n1 << "," << n2 << ")=" << x_zp[n1][n2 + k2] << "\n";
+				}
+				y.arr[n2][n1 - P] = sum;
+				cout << "- - - - - - - - - - - - - \n";
+			}
+			int debug = 0;
+		}
+
+		return y;
 	}
 	// - - - - - - - - - - - - - - - - 
 	void two_D()
@@ -48,44 +92,15 @@ namespace two_D
 		};
 
 		// Zero-pad
-		ArrStruct x_zp = pad(x);
+		ArrStruct_zp x_zp = pad(x);
 
 		// Display
 		print("After zero-padding", x_zp.arr);
 
-		//auto lambda = [](int n1, int n2, int val) -> void
-		//{
-		//	cout << "(n1,n2):(" << n1 << "," << n2 << ")=" << val << "\n";
-		//};
+		// Do conv
+		ArrStruct y = conv(x_zp.arr);
+		print("After conv", y.arr);
 
-		//// Do Convolution
-		//int y2_zp[Q][Q] = {};
-		//for (size_t n1 = 0; n1 != N; n1++)
-		//{
-		//	cout << "--------------\n";
-		//	for (size_t n2 = 0; n2 != N; n2++)
-		//	{
-		//		// 1D-conv (row-vectors)
-		//		int sum = 0;
-		//		for (size_t k2 = 0; k2 != K; k2++)
-		//		{
-		//			//sum += x2_zp[n1][n2 + k2];
-		//			//lambda(n1, n2, x2_zp[n1][n2 + k2]);
-		//		}
-		//		cout << "sum = " << sum << "\n";
-		//		y2_zp[n1][n2] = sum;
-		//	}
-		//}
-		//print("After processing", y2_zp);
-
-		//// Extract - can remove by just writing the output like this
-		//int y2[N][N] = {};
-		//for (size_t n1 = 0; n1 != N; n1++)
-		//	for (size_t n2 = 0; n2 != N; n2++)
-		//	{
-		//		y2[n1][n2] = y2_zp[n1 + 1][n2 + 1];
-		//	}
-		//print("After processing", y2);
 		getchar();
 	}
 } // namespace two_D

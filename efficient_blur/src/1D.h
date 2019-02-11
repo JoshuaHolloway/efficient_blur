@@ -5,23 +5,14 @@ namespace one_D
 	constexpr size_t K = 3;         // Size of kernel in each dim
 	constexpr size_t P = K / 2;		// Zero-padding on each side
 	constexpr size_t Q = N + 2 * P; // Size of zero-padded in each dim
-
+	// - - - - - - - - - - - - - - - - 
+	
 	// L1 cache-line is 64-Bytes
 	__declspec(align(64))
 	struct ArrStruct_zp { int arr[Q]; };
 
 	__declspec(align(64))
 	struct ArrStruct { int arr[N]; };
-	// - - - - - - - - - - - - - - - - 
-	template <size_t cols, typename T>
-	ArrStruct_zp pad(T(&x1)[cols])
-	{
-		// Input: Row-vector
-		ArrStruct_zp s = {};
-		for (size_t n = P; n != Q - P; n++)
-			s.arr[n] = x1[n - P];
-		return s;
-	}
 	// - - - - - - - - - - - - - - - - 
 	template <size_t cols, typename T>
 	void print(std::string str, T(&array)[cols])
@@ -34,6 +25,16 @@ namespace one_D
 			cout << array[j] << '\t';
 		cout << std::endl;
 	}
+	// - - - - - - - - - - - - - - - - 
+	template <size_t cols, typename T>
+	ArrStruct_zp pad(T(&x1)[cols])
+	{
+		// Input: Row-vector
+		ArrStruct_zp s = {};
+		for (size_t n = P; n != Q - P; ++n)
+			s.arr[n] = x1[n - P];
+		return s;
+	}
 	// - - - - - - - - - - - - - - - -
 	template <size_t N_, typename T>
 	ArrStruct conv(T(&x_zp)[N_])
@@ -43,12 +44,13 @@ namespace one_D
 
 		// Do Convolution
 		ArrStruct y = {};
+		//cout << "cols = " << N_ << "\n";
 
 		// 1D-conv (row-vector)
-		for (size_t n2 = 0; n2 != N_; n2++)
+		for (size_t n2 = 0; n2 != N_; ++n2)
 		{
 			int sum = 0;
-			for (size_t k2 = 0; k2 != K; k2++)
+			for (size_t k2 = 0; k2 != K; ++k2)
 			{
 				sum += x_zp[n2 + k2];
 				//cout << "(n2):(" << n2 << ")=" << x_zp[n2 + k2] << "\n";

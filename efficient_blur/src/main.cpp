@@ -3,7 +3,7 @@
 // - - - - - - - - - - - - - - - - 
 int main()
 {
-	one_D::one_D();
-	//two_D::two_D();
+	//one_D::one_D();
+	two_D::two_D();
 	return 0;
 }
