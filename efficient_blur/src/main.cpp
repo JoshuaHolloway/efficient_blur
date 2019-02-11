@@ -1,7 +1,9 @@
 #include "2D.h"
+#include "1D.h"
 // - - - - - - - - - - - - - - - - 
 int main()
 {
-	two_D::two_D_();
+	one_D::one_D();
+	two_D::two_D();
 	return 0;
 }

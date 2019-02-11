@@ -10,10 +10,7 @@ namespace two_D
 	constexpr size_t P = K / 2;		// Zero-padding on each side
 	constexpr size_t Q = N + 2 * P; // Size of zero-padded in each dim
 	// - - - - - - - - - - - - - - - - 
-	struct ArrStruct
-	{
-		int arr[Q][Q];
-	};
+	struct ArrStruct { int arr[Q][Q]; };
 	// - - - - - - - - - - - - - - - - 
 	template <size_t rows, size_t cols>
 	void print(std::string str, int(&array)[rows][cols])
@@ -31,42 +28,30 @@ namespace two_D
 		cout << "\n";
 	}
 	// - - - - - - - - - - - - - - - - 
-	template <size_t cols>
-	void print(std::string str, int(&array)[cols])
-	{
-		using std::cout;
-		cout << __func__ << std::endl;
-		cout << str.c_str() << "\n";
-
-		for (size_t j = 0; j < cols; ++j)
-			cout << array[j] << '\t';
-		cout << std::endl;
-
-	}
-	// - - - - - - - - - - - - - - - - 
 	template <size_t rows, size_t cols>
-	ArrStruct pad(int(&x2)[rows][cols])
+	ArrStruct pad(int(&x)[rows][cols])
 	{
 		ArrStruct s = {};
-		for (size_t y = P; y != Q - P; y++)
-			for (size_t x = P; x != Q - P; x++)
-				s.arr[y][x] = x2[y - P][x - P];
+		for (size_t n1 = P; n1 != Q - P; n1++)
+			for (size_t n2 = P; n2 != Q - P; n2++)
+				s.arr[n1][n2] = x[n1 - P][n2 - P];
 		return s;
 	}
-
-	void two_D_()
+	// - - - - - - - - - - - - - - - - 
+	void two_D()
 	{
-		int x2[N][N] = {
+		int x[N][N] = {
 			{ 1,  2,  3, 4},
 			{ 5,  6,  7, 8},
 			{ 9, 10, 11, 12},
 			{13, 14, 15, 16}
 		};
 
+		// Zero-pad
+		ArrStruct x_zp = pad(x);
+
 		// Display
-		ArrStruct x2_zp = pad(x2);
-		print("After zero-padding", x2_zp.arr);
-		//print("x1", x1);
+		print("After zero-padding", x_zp.arr);
 
 		//auto lambda = [](int n1, int n2, int val) -> void
 		//{
@@ -103,4 +88,4 @@ namespace two_D
 		//print("After processing", y2);
 		getchar();
 	}
-}
+} // namespace two_D
