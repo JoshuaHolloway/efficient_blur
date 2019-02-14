@@ -56,11 +56,11 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\dev\efficient_blur\efficient_blur\opencv\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>C:\dev\efficient_blur\efficient_blur\opencv\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>opencv_core341d.lib;opencv_highgui341d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>opencv_core341d.lib;opencv_highgui341d.lib;opencv_imgcodecs341d.lib;opencv_imgproc341d.lib;opencv_video341d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -71,12 +71,12 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\dev\efficient_blur\efficient_blur\opencv\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\dev\efficient_blur\efficient_blur\opencv\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -85,6 +85,7 @@
   <ItemGroup>
     <ClInclude Include="src\1D.h" />
     <ClInclude Include="src\2D.h" />
+    <ClInclude Include="src\2D_arrays.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
