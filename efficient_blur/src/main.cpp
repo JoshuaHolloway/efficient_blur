@@ -19,7 +19,8 @@ int main()
 	//printArray(arr, N);
 	
 	//one_D::one_D();
-	//two_D::two_D();
-	two_D::extreme_1();
+	two_D::two_D();
+	//two_D::extreme_1();
+	//two_D::extreme_2();
 	return 0;
 }
