@@ -429,12 +429,19 @@ namespace two_D
 
 
 		// Repeat with 1D-array
-		float* x_arr = mat_2_arr(x);
-		print("x_arr", x_arr, N, N);
-		float* x_arr_zp = pad(x_arr);
-		print("x_arr_zp", x_arr_zp, Q, Q);
-		float* y_1D = conv(x_arr_zp);
+		float* x_1D = mat_2_arr(x);
+		print("x_arr", x_1D, N, N);
+		float* x_1D_zp = pad(x_1D);
+		print("x_arr_zp", x_1D_zp, Q, Q);
+		float* y_1D = conv(x_1D_zp);
 		print("y_1D", y_1D, N, N);
+
+		// put the thing down, flip it and reverse it:
+		float* y_arr_zp = pad(y_1D);
+		print("y_arr_zp", y_arr_zp, Q, Q);
+		float* z_1D = conv(y_arr_zp);
+		print("z_1D", z_1D, N, N);
+
 
 
 
