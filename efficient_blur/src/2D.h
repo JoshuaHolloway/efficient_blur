@@ -146,6 +146,41 @@ namespace two_D
 		return y;
 	}
 	// - - - - - - - - - - - - - - - -
+	float* conv(float* x_zp)
+	{
+		// Same as previous conv() just with 1D-array
+
+		float* y = new float[N * N];;
+		for (size_t n1 = P; n1 < Q - P; n1++)
+		{
+			cout << "===========================\n";
+			cout << "n1 = " << n1 << "\n";
+			cout << "===========================\n";
+			for (size_t n2 = 0; n2 < 4; n2++)
+			{
+				float sum = 0.f;
+				for (size_t k2 = 0; k2 != K; k2++)
+				{
+					int i = n1;
+					int j = n2 + k2;
+					//sum += x_zp[n1][n2 + k2];
+					sum += x_zp[lin(i, j, Q)];
+
+
+					//cout << "n2=" << n2 << " k2=" << k2 << " [n2+k2]=" << n2 + k2;
+					//cout << "  (n1,n2):(" << n1 << "," << n2 << ")=" << x_zp[n1][n2 + k2] << "\n";
+				}
+				y[lin(n2, n1 - P, N)] = sum;
+				//y.arr[n2][n1 - P] = sum;
+				//cout << "- - - - - - - - - - - - - \n";
+				//getchar();
+			}
+			int debug = 0;
+		}
+
+		return y;
+	}
+	// - - - - - - - - - - - - - - - -
 	template <size_t rows, size_t cols>
 	void conv_1(float(&x_zp)[rows][cols])
 	{
@@ -398,6 +433,8 @@ namespace two_D
 		print("x_arr", x_arr, N, N);
 		float* x_arr_zp = pad(x_arr);
 		print("x_arr_zp", x_arr_zp, Q, Q);
+		float* y_1D = conv(x_arr_zp);
+		print("y_1D", y_1D, N, N);
 
 
 

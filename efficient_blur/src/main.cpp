@@ -9,7 +9,6 @@ using namespace cv;
 // - - - - - - - - - - - - - - - - 
 int main()
 {
-
 	//cv::Mat mat = cv::imread("lena_512.png",CV_LOAD_IMAGE_GRAYSCALE);
 	//cv::imshow("mat", mat);
 	//cv::waitKey(0);
