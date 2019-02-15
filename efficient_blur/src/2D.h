@@ -193,6 +193,9 @@ namespace two_D
 			cout << "===========================\n";	
 			for (size_t n1 = 0; n1 < N; n1++)
 			{
+				// This is wrong - the sum should be inside the next loop!
+				// This is wrong - the sum should be inside the next loop!
+				// See how I fixed this in the following conv_1() function
 				float sum = 0.f;
 
 				for (size_t k1 = 0; k1 != K; k1++)
@@ -253,11 +256,12 @@ namespace two_D
 			cout << "===========================\n";
 			for (size_t n1 = 0; n1 < N_; n1++)
 			{
-				float sum = 0.f;
+				
 
 				for (size_t k1 = 0; k1 != K_; k1++)
 				{
 					cout << "Read From Input:   ";
+					float sum = 0.f;
 					for (size_t k2 = 0; k2 != K_; k2++)
 					{
 						int i = n1 + k1;
@@ -279,7 +283,7 @@ namespace two_D
 				}
 
 				cout << "Read from Buffer:  ";
-				sum = 0;
+				float sum = 0;
 				for (size_t k1 = 0; k1 < K_; k1++)
 				{
 					int i = k1 + n1;
@@ -466,20 +470,19 @@ namespace two_D
 			{13, 14, 15, 16}
 		};
 
+		//// Repeat with 1D-array
+		//float* x_1D = mat_2_arr(x);
+		//print("x_arr", x_1D, N, N);
+		//float* x_1D_zp = pad(x_1D, N, P, Q);
+		//print("x_arr_zp", x_1D_zp, Q, Q);
+		//float* y_1D = conv(x_1D_zp, N, K, P, Q);
+		//print("y_1D", y_1D, N, N);
 
-		// Repeat with 1D-array
-		float* x_1D = mat_2_arr(x);
-		print("x_arr", x_1D, N, N);
-		float* x_1D_zp = pad(x_1D, N, P, Q);
-		print("x_arr_zp", x_1D_zp, Q, Q);
-		float* y_1D = conv(x_1D_zp, N, K, P, Q);
-		print("y_1D", y_1D, N, N);
-
-		// put the thing down, flip it and reverse it:
-		float* y_arr_zp = pad(y_1D, N, P, Q);
-		print("y_arr_zp", y_arr_zp, Q, Q);
-		float* z_1D = conv(y_arr_zp, N, K, P, Q);
-		print("z_1D", z_1D, N, N);
+		//// put the thing down, flip it and reverse it:
+		//float* y_arr_zp = pad(y_1D, N, P, Q);
+		//print("y_arr_zp", y_arr_zp, Q, Q);
+		//float* z_1D = conv(y_arr_zp, N, K, P, Q);
+		//print("z_1D", z_1D, N, N);
 
 		// Zero-pad
 		ArrStruct_zp x_zp = pad(x);
