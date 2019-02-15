@@ -1,4 +1,7 @@
 #pragma once
+#include "opencv2/core/core.hpp"
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgcodecs/imgcodecs.hpp"
 #include <iostream>
 #include <string>
 using std::cout;
@@ -19,7 +22,6 @@ namespace two_D
 
 	__declspec(align(64))
 		struct ArrStruct { float arr[N][N]; };
-
 
 	// - - - - - - - - - - - - - - - - 
 	inline size_t lin(size_t i, size_t j, size_t cols)
@@ -84,22 +86,22 @@ namespace two_D
 				s.arr[n1][n2] = x[n1 - P][n2 - P];
 		return s;
 	}
-	float* pad(const float* x)
+	float* pad(const float* x, size_t N_, size_t P_, size_t Q_)
 	{
 		auto loop_print = [=](size_t i, size_t j, float val, string name) -> void
 		{cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
 
-		float* x_zp = new float[Q * Q];
-		for (int i = 0; i < Q*Q; ++i)
+		float* x_zp = new float[Q_ * Q_];
+		for (int i = 0; i < Q_*Q_; ++i)
 			x_zp[i] = 0;
 
-		float local_arr[Q * Q];
-		for (size_t n1 = P; n1 != Q - P; ++n1)
+		float* local_arr = new float[Q_ * Q_];
+		for (size_t n1 = P; n1 != Q_ - P_; ++n1)
 		{
-			for (size_t n2 = P; n2 != Q - P; ++n2)
+			for (size_t n2 = P; n2 != Q_ - P_; ++n2)
 			{
 				//s.arr[n1][n2] = x[n1 - P][n2 - P];
-				x_zp[lin(n1, n2, Q)] = x[lin(n1 - P, n2 - P, N)];
+				x_zp[lin(n1, n2, Q_)] = x[lin(n1 - P_, n2 - P_, N_)];
 			}
 		}
 
@@ -146,37 +148,26 @@ namespace two_D
 		return y;
 	}
 	// - - - - - - - - - - - - - - - -
-	float* conv(float* x_zp)
+	float* conv(float* x_zp, size_t N_, size_t K_, size_t P_, size_t Q_)
 	{
 		// Same as previous conv() just with 1D-array
 
-		float* y = new float[N * N];;
-		for (size_t n1 = P; n1 < Q - P; n1++)
-		{
-			cout << "===========================\n";
-			cout << "n1 = " << n1 << "\n";
-			cout << "===========================\n";
-			for (size_t n2 = 0; n2 < 4; n2++)
+		// Tap coefficients in the 2D-FIR filter
+		float box_amplitude = 1 / float(K_);
+
+		float* y = new float[N_ * N_];
+		for (size_t n1 = P_; n1 < Q_-P_; n1++)
+			for (size_t n2 = 0; n2 < N_; n2++)
 			{
 				float sum = 0.f;
-				for (size_t k2 = 0; k2 != K; k2++)
+				for (size_t k2 = 0; k2 != K_; k2++)
 				{
 					int i = n1;
 					int j = n2 + k2;
-					//sum += x_zp[n1][n2 + k2];
-					sum += x_zp[lin(i, j, Q)];
-
-
-					//cout << "n2=" << n2 << " k2=" << k2 << " [n2+k2]=" << n2 + k2;
-					//cout << "  (n1,n2):(" << n1 << "," << n2 << ")=" << x_zp[n1][n2 + k2] << "\n";
+					sum += x_zp[lin(i, j, Q_)];
 				}
-				y[lin(n2, n1 - P, N)] = sum;
-				//y.arr[n2][n1 - P] = sum;
-				//cout << "- - - - - - - - - - - - - \n";
-				//getchar();
+				y[lin(n2, n1 - P_, N_)] = sum * box_amplitude;
 			}
-			int debug = 0;
-		}
 
 		return y;
 	}
@@ -431,23 +422,19 @@ namespace two_D
 		// Repeat with 1D-array
 		float* x_1D = mat_2_arr(x);
 		print("x_arr", x_1D, N, N);
-		float* x_1D_zp = pad(x_1D);
+		float* x_1D_zp = pad(x_1D, N, P, Q);
 		print("x_arr_zp", x_1D_zp, Q, Q);
-		float* y_1D = conv(x_1D_zp);
+		float* y_1D = conv(x_1D_zp, N, K, P, Q);
 		print("y_1D", y_1D, N, N);
 
 		// put the thing down, flip it and reverse it:
-		float* y_arr_zp = pad(y_1D);
+		float* y_arr_zp = pad(y_1D, N, P, Q);
 		print("y_arr_zp", y_arr_zp, Q, Q);
-		float* z_1D = conv(y_arr_zp);
+		float* z_1D = conv(y_arr_zp, N, K, P, Q);
 		print("z_1D", z_1D, N, N);
-
-
-
 
 		// Zero-pad
 		ArrStruct_zp x_zp = pad(x);
-
 
 		// Display
 		print("After zero-padding", x_zp.arr);
@@ -461,10 +448,45 @@ namespace two_D
 		ArrStruct z = conv(y_zp.arr);
 		print("After conv (stage-2)", z.arr);
 
-
-
-
 		getchar();
+	}
+	// - - - - - - - - - - - - - - - - 
+	cv::Mat two_D_image(cv::Mat& x)
+	{
+		const size_t rows = x.rows;
+		const size_t cols = x.cols;
+
+		float* x_1D = new float[rows * cols];
+		cv::Mat x_f(rows, cols, CV_32FC1);
+		x.convertTo(x_f, CV_32FC1);
+		for (int i = 0; i < rows; ++i)
+			for (int j = 0; j < cols; ++j)
+				x_1D[lin(i, j, cols)] = x_f.at<float>(i, j);
+
+
+		const size_t N_ = cols;
+		const size_t P_ = K / 2;		// Zero-padding on each side
+		const size_t Q_ = N_ + 2 * P_; // Size of zero-padded in each dim
+
+		// pad
+		//float* x_1D = mat_2_arr(x);
+		//print("x_arr", x_1D, N, N);
+		float* x_1D_zp = pad(x_1D, N_, P_, Q_);
+		float* y_1D = conv(x_1D_zp, N_, K, P_, Q_);
+		float* y_1D_zp = pad(y_1D, N_, P_, Q_);
+		float* z_1D = conv(y_1D_zp, N_, K, P_, Q_);
+
+		// convert back to mat
+
+		cv::Mat z(rows, cols, CV_8UC1);
+		for (int i = 0; i < rows*cols ; ++i)
+			z.data[i] = (unsigned char)z_1D[i];
+
+		cv::imshow("debug_mat", z);
+		cv::waitKey(0);
+	
+
+		return z;
 	}
 	// - - - - - - - - - - - - - - - - 
 	void extreme_1()
