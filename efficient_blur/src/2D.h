@@ -177,8 +177,6 @@ namespace two_D
 	template <size_t rows, size_t cols>
 	void conv_1(float(&x_zp)[rows][cols])
 	{
-		// Pattern matching the dependency graph 
-		// (far left in prototype diagram)
 			   
 		auto loop_print = [=](size_t i, size_t j, float val, string name) -> void 
 		{cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
@@ -240,8 +238,6 @@ namespace two_D
 	// - - - - - - - - - - - - - - - -
 	float* conv_1(float* x_zp, size_t N_, size_t K_, size_t P_, size_t Q_)
 	{
-		// Pattern matching the dependency graph 
-		// (far left in prototype diagram)
 
 		auto loop_print = [=](size_t i, size_t j, float val, string name) -> void
 		{cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
@@ -310,98 +306,206 @@ namespace two_D
 		return z;
 	}
 	// - - - - - - - - - - - - - - - -
-//	template <size_t rows, size_t cols>
-//	void conv_2(float(&x_zp)[rows][cols])
-//	{
-//		// Maxim
-//e
-//
-//		// Desired reads ordering:                          
-//		//	Step-#	   Read-From               Write-to:	
-//		//   0     x[00], x[01], x[02]   ->      y[00]		
-//		//   1     x[10], x[11], x[12]   ->      y[10]      
-//		//   2     x[20], x[21], x[22]   ->      y[20]      
-//		//   3     y[00], y[10], y[20]   ->      z[00]                                      
-//
-//		//   4     x[01], x[02], x[03]   ->      y[01]
-//		//   5     x[11], x[12], x[13]   ->      y[11]
-//		//   6     x[21], x[22], x[23]   ->      y[21]
-//		//   7     y[01], y[11], y[21]   ->      z[01]
-//
-//		//   8     x[02], x[03], x[04]   ->      y[02]
-//		//   9     x[12], x[13], x[14]   ->      y[12]
-//		//   10    x[22], x[23], x[24]   ->      y[22]
-//		//   11    y[02], y[12], y[22]   ->      z[02]
-//
-//		//   10    x[03], x[04], x[05]   ->      y[03]
-//		//   11    x[13], x[14], x[15]   ->      y[13]
-//		//   12    x[23], x[24], x[25]   ->      y[23]
-//		//   13    y[03], y[13], y[23]   ->      z[03]
-//
-//		// From cache: 
-//
-//
-//		//   14    x[03], x[04], x[05]   ->      y[03]
-//		//   15    x[13], x[14], x[15]   ->      y[13]
-//		//   16    x[23], x[24], x[25]   ->      y[23]
-//		//   17    y[03], y[14], y[25]   ->      z[03]
-//
-//	auto loop_print = [=](size_t i, size_t j, float val, string name) -> void
-//	{cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
-//
-//
-//
-//		float y[6][4] = { 0 };
-//		float z[4][4] = { 0 };
-//
-//		// 1D-conv (row-vector)
-//		for (size_t n1 = 0; n1 < N; n1++)
-//		{
-//			cout << "===========================\n";
-//			cout << "===========================\n";
-//			for (size_t n2 = 0; n2 < 4; n2++)
-//			{
-//				float sum = 0.f;
-//
-//				for (size_t k1 = 0; k1 != K; k1++)
-//				{
-//					cout << "Read From Input:   ";
-//					for (size_t k2 = 0; k2 != K; k2++)
-//					{
-//						int i = n1 + k1;
-//						int j = n2 + k2;
-//						sum += x_zp[i][j];
-//						loop_print(i, j, x_zp[i][j], "x");
-//					}
-//					int i = k1 + n1;
-//					int j = n2;
-//					y[i][j] = sum;
-//					cout << "\tWrite to Buffer:  ";
-//					loop_print(i, j, y[i][j], "y");
-//					getchar();
-//					cout << "\n";
-//				}
-//
-//				cout << "Read from Buffer:  ";
-//				sum = 0;
-//				for (size_t k1 = 0; k1 < 3; k1++)
-//				{
-//					int i = k1 + n1;
-//					int j = n2;
-//					sum += y[i][n2];
-//					loop_print(i, j, y[i][j], "y");
-//				}
-//				int i = n1;
-//				int j = n2;
-//				z[i][j] = sum;
-//				cout << "\tWrite to Output:  ";
-//				loop_print(i, j, z[i][j], "z");
-//				cout << "\n- - - - - - - - - - - - - \n";
-//				getchar();
-//
-//			} // n1
-//		} // n2
-//	}
+	template <size_t rows, size_t cols>
+	void conv_2(float(&x_zp)[rows][cols])
+	{
+
+	auto loop_print = [=](size_t i, size_t j, float val, string name) -> void
+	{cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
+
+
+
+		float y[6][4] = { 0 };
+		float z[4][4] = { 0 };
+
+		for (size_t n1 = 0; n1 < N; n1++)
+		{
+			cout << "===========================\n";
+			cout << "===========================\n";
+			for (size_t n2 = 0; n2 < N; n2++)
+			{
+				for (size_t k1 = 0; k1 != K; k1++)
+				{
+					float sum = 0.f;
+					cout << "Read From Input:   ";
+					for (size_t k2 = 0; k2 != K; k2++)
+					{
+						int i = n1 + k1;
+						int j = n2 + k2;
+						sum += x_zp[i][j];
+						loop_print(i, j, x_zp[i][j], "x");
+					}
+					int i = k1 + n1;
+					int j = n2;
+					y[i][j] = sum;
+					cout << "\tWrite to Buffer:  ";
+					loop_print(i, j, y[i][j], "y");
+					getchar();
+					cout << "\n";
+				}
+
+				cout << "Read from Buffer:  ";
+				float sum = 0;
+				for (size_t k1 = 0; k1 < 3; k1++)
+				{
+					int i = k1 + n1;
+					int j = n2;
+					sum += y[i][n2];
+					loop_print(i, j, y[i][j], "y");
+				}
+				int i = n1;
+				int j = n2;
+				z[i][j] = sum;
+				cout << "\tWrite to Output:  ";
+				loop_print(i, j, z[i][j], "z");
+				cout << "\n- - - - - - - - - - - - - \n";
+				getchar();
+
+			} // n1
+		} // n2
+	}
+	// - - - - - - - - - - - - - - - - 
+
+	// - - - - - - - - - - - - - - - -
+	template <size_t rows, size_t cols>
+	void conv_4(float(&x_zp)[rows][cols])
+	{
+		// Imp-4: Tiled
+
+		// Current: 
+		//Read From Input : x(0, 0) = 0   x(0, 1) = 0      x(0, 2) = 0              Write to Buffer : y(0, 0) = 0
+		//Read From Input : x(1, 0) = 0   x(1, 1) = 1      x(1, 2) = 2              Write to Buffer : y(1, 0) = 3
+		//Read From Input : x(2, 0) = 0   x(2, 1) = 5      x(2, 2) = 6              Write to Buffer : y(2, 0) = 11
+		//Read from Buffer : y(0, 0) = 0   y(1, 0) = 3      y(2, 0) = 11            Write to Output : z(0, 0) = 14
+
+		// Desired: 
+
+		/// Stage 1: Write to buffer:
+		// Tile idx = 0:
+		//Read From Input : x(0, 0) = 0   x(0, 1) = 0      x(0, 2) = 0              Write to Buffer : y[0][0]
+		//Read From Input : x(0, 1) = 0   x(0, 2) = 1      x(0, 3) = 2              Write to Buffer : y[1][1]
+
+		// Tile idx = 1:
+		//Read From Input : x(1, 0) = 0   x(1, 1) = 1      x(1, 2) = 2              Write to Buffer : y[1][0]
+		//Read From Input : x(1, 1) = 1   x(1, 2) = 2      x(1, 3) = 3              Write to Buffer : y[1][1]
+
+		// Tile idx = 2:
+		//Read From Input : x(2, 0) = 0   x(2, 1) = 5      x(2, 2) = 6              Write to Buffer : y[2][0]
+		//Read From Input : x(2, 1) = 5   x(2, 2) = 6      x(2, 3) = 7              Write to Buffer : y[2][1]
+
+		// Tile idx = 3:
+		//Read From Input : x(3, 0) = 0    x(3, 1) = 9      x(3, 2) = 10            Write to Buffer : y[3][0]
+		//Read From Input : x(3, 1) = 10   x(3, 2) = 11     x(3, 3) = 12            Write to Buffer : y[3][1]
+
+
+		/// Stage 2: Write to output:
+		//Read from Buffer : y(0, 0) = ?   y(1, 0) = ?      y(2, 0) = ?             Write to Output : z(0, 0) = ?
+		//Read from Buffer : y(1, 0) = ?   y(2, 0) = ?      y(3, 0) = ?             Write to Output : z(1, 0) = ?
+
+		//Read from Buffer : y(0, 1) = ?   y(1, 1) = ?      y(2, 1) = ?             Write to Output : z(0, 1) = ?
+		//Read from Buffer : y(1, 1) = ?   y(2, 1) = ?      y(3, 1) = ?             Write to Output : z(1, 1) = ?
+
+
+
+		auto loop_print = [=](size_t i, size_t j, float val, string name) -> void
+		{cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
+
+
+		// TODO: Change buffer to 1D-array
+		float y[4][2] = { 0 };
+		//float y[4 * 2] = {};
+
+		float z[4][4] = { 0 };
+
+		int tile_num = 1;
+		for (size_t n1 = 0; n1 < N; n1+=2)
+		{
+
+			for (size_t n2 = 0; n2 < N; n2+=2)
+			{
+				cout << "===========================\n";
+				cout << "        Tile #" 
+					<< tile_num++ << "\n";
+				cout << "===========================\n";
+
+
+				// Tile loop:
+				//size_t tile_idx(0);
+				for (size_t bi = 0; bi < 4; bi++) // tile-row
+				{
+					for (size_t bj = 0; bj < 2; bj++) // tile-col
+					{
+						// Do 1-D conv here				
+						float sum = 0.f;
+						cout << "Read From Input:   ";
+						for (size_t k2 = 0; k2 != K; k2++)
+						{
+							int i = n1 + bi;
+							int j = n2 + k2 + bj;
+							sum += x_zp[i][j];
+							loop_print(i, j, x_zp[i][j], "x");
+						}
+						size_t i = bi;
+						size_t j = bj;
+
+						// TODO: Change buffer to 1D-array
+						y[i][j] = sum;
+						//y[tile_idx++] = sum;
+
+						cout << "\tWrite to Buffer:  ";
+						loop_print(i, j, y[i][j], "y");
+						getchar();
+
+					} // bi
+
+				} // bj
+
+				//cout << "======Read from Buffer=====\n";
+				//cout << "======Write to Output=======\n";
+
+
+
+
+				for (size_t bj = 0; bj < 2; bj++) // tile-col
+				{
+					for (size_t bi = 0; bi < 2; bi++) // tile-row
+					{
+						cout << "Read from Buffer:  ";
+						float sum = 0;
+						for (size_t k1 = 0; k1 < 3; k1++)
+						{
+							int i = bi + k1;
+							int j = bj;// oj + n2;
+							
+
+							// TODO: Change buffer to 1D-array
+							
+							
+							// This indexing is off
+							sum += y[i][j];
+
+
+
+							loop_print(i, j, y[i][j], "y");
+						}
+
+						// This output index is  wrong
+						int i = n1 + bi;
+						int j = n2 + bj;
+
+						// This index is off!
+
+						z[i][j] = sum;
+						cout << "\tWrite to Output:  ";
+						loop_print(i, j, z[i][j], "z");
+						getchar();
+					}
+				}
+
+
+			} // n2
+		} // n1
+	}
 	// - - - - - - - - - - - - - - - - 
 	template <size_t rows, size_t cols, typename T>
 	ArrStruct conv_fused_1(T(&x_zp)[rows][cols])
@@ -461,7 +565,7 @@ namespace two_D
 	// - - - - - - - - - - - - - - - - 
 	void two_D()
 	{
-		// Current working prototype
+		// Imp-1: Using static 2D-arrays
 
 		float x[N][N] = {
 			{ 1,  2,  3, 4},
@@ -540,10 +644,9 @@ namespace two_D
 		return z;
 	}
 	// - - - - - - - - - - - - - - - - 
-	void extreme_1()
+	void imp_1()
 	{
-		// Pattern matching the dependency graph 
-		// (far left in prototype diagram)
+		// Imp-1: Using dynamic arrays
 
 		// 4x4
 		float x_44[N][N] = {
@@ -553,17 +656,27 @@ namespace two_D
 			{13, 14, 15, 16}
 		};
 
-		// Step 1: Modify to return dynamic array
+		float x_88[8][8] = {};
+		for (int i = 0; i < 8 ; ++i)
+			for (int j = 0; j < 8; ++j)
+				x_88[i][j] = i * 8 + j;
+
 		float* x_44_1D = mat_2_arr(x_44);
-		print("x_arr", x_44_1D, N, N);
+		print("x_44_1D", x_44_1D, N, N);
 		float* x_44_1D_zp = pad(x_44_1D, N, P, Q);
-		print("x_arr_zp", x_44_1D_zp, Q, Q);
+		print("x_44_1D_zp", x_44_1D_zp, Q, Q);
 		float* y_44_1D = conv_1(x_44_1D_zp, N, K, P, Q);
 		print("y_44_1D", y_44_1D, N, N);
 
+		/// Step 2: Modify to work with 8x8 - not working yet
+		//float* x_88_1D = mat_2_arr(x_88);
+		//print("x_88_1D", x_88_1D, N, N);
+		//float* x_88_1D_zp = pad(x_88_1D, N, P, Q);
+		//print("x_88_1D_zp", x_88_1D_zp, Q, Q);
+		//float* y_88_1D = conv_1(x_88_1D_zp, 8, K, P, 8 + 2 * P);
+		//print("y_88_1D", y_88_1D, N, N);
 
-		// Step 2: Modify to work with 8x8
-		// Step 3: Generalize tiles to arbitrary size
+		/// Step 3: Generalize tiles to arbitrary size
 
 		ArrStruct_zp x_44_zp = pad(x_44);
 		print("After zero-padding", x_44_zp.arr);
@@ -572,9 +685,9 @@ namespace two_D
 		getchar();
 	}
 	// - - - - - - - - - - - - - - - - 
-	void extreme_2()
+	void imp_2()
 	{
-		// Matching the prototype indexing
+		// Imp-2: Maximum Locality
 
 		float x[N][N] = {
 			{ 1,  2,  3, 4},
@@ -590,8 +703,36 @@ namespace two_D
 		print("After zero-padding", x_zp.arr);
 
 		// Do conv - extreme 1
+		conv_2(x_zp.arr);
 
-		//conv_2(x_zp.arr);
+		getchar();
+	}
+	// - - - - - - - - - - - - - - - - 
+	void imp_3()
+	{
+		// Imp-3: Maximum Locality with Re-used Values
+
+	}
+	// - - - - - - - - - - - - - - - - 
+	void imp_4()
+	{
+		// Imp-4: Tiled
+
+		float x[N][N] = {
+			{ 1,  2,  3, 4},
+			{ 5,  6,  7, 8},
+			{ 9, 10, 11, 12},
+			{13, 14, 15, 16}
+		};
+
+		// Zero-pad
+		ArrStruct_zp x_zp = pad(x);
+
+		// Display
+		print("After zero-padding", x_zp.arr);
+
+		// Do conv
+		conv_4(x_zp.arr);
 
 		getchar();
 	}

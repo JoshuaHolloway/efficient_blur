@@ -86,6 +86,7 @@
     <ClInclude Include="src\1D.h" />
     <ClInclude Include="src\2D.h" />
     <ClInclude Include="src\2D_arrays.h" />
+    <ClInclude Include="src\Timer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
