@@ -458,7 +458,7 @@ namespace two_D
 	template <size_t rows, size_t cols>
 	void conv_5(float(&x_zp)[rows][cols])
 	{
-		// Imp-4: Tiled
+		// Imp-4: Tiled with 8x8
 
 		auto loop_print = [=](size_t i, size_t j, float val, string name) -> void
 		{cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
@@ -469,8 +469,6 @@ namespace two_D
 		int tile_num = 1;
 		for (size_t n1 = 0; n1 < 8; n1 += 2)
 		{
-			// Changed from n2<8 to n2<4 to fix tile-3
-
 			for (size_t n2 = 0; n2 < 8; n2 += 2)
 			{
 				cout << "===========================\n";
@@ -513,25 +511,14 @@ namespace two_D
 						for (size_t k1 = 0; k1 < 3; k1++)
 						{
 							int i = bi + k1;
-							int j = bj;// oj + n2;
+							int j = bj;
 
-
-							// TODO: Change buffer to 1D-array
-
-
-							// This indexing is off
 							sum += y[i][j];
-
-
-
 							loop_print(i, j, y[i][j], "y");
 						}
 
-						// This output index is  wrong
 						int i = n1 + bi;
 						int j = n2 + bj;
-
-						// This index is off!
 
 						z[i][j] = sum;
 						cout << "\tWrite to Output:  ";
@@ -539,8 +526,6 @@ namespace two_D
 						getchar();
 					}
 				}
-
-
 			} // n2
 		} // n1
 	}
