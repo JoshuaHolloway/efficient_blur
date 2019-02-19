@@ -29,6 +29,7 @@ int main()
 	//two_D::imp_2();
 	//two_D::imp_3();
 	//two_D::imp_4();
-	two_D::imp_5();
+	//two_D::imp_4_input8x8_tile4x4();
+	two_D::imp_4_input8x8_tile6x6();
 	return 0;
 }
