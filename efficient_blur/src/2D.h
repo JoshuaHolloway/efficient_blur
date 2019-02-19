@@ -372,55 +372,15 @@ namespace two_D
 	{
 		// Imp-4: Tiled
 
-		// Current: 
-		//Read From Input : x(0, 0) = 0   x(0, 1) = 0      x(0, 2) = 0              Write to Buffer : y(0, 0) = 0
-		//Read From Input : x(1, 0) = 0   x(1, 1) = 1      x(1, 2) = 2              Write to Buffer : y(1, 0) = 3
-		//Read From Input : x(2, 0) = 0   x(2, 1) = 5      x(2, 2) = 6              Write to Buffer : y(2, 0) = 11
-		//Read from Buffer : y(0, 0) = 0   y(1, 0) = 3      y(2, 0) = 11            Write to Output : z(0, 0) = 14
-
-		// Desired: 
-
-		/// Stage 1: Write to buffer:
-		// Tile idx = 0:
-		//Read From Input : x(0, 0) = 0   x(0, 1) = 0      x(0, 2) = 0              Write to Buffer : y[0][0]
-		//Read From Input : x(0, 1) = 0   x(0, 2) = 1      x(0, 3) = 2              Write to Buffer : y[1][1]
-
-		// Tile idx = 1:
-		//Read From Input : x(1, 0) = 0   x(1, 1) = 1      x(1, 2) = 2              Write to Buffer : y[1][0]
-		//Read From Input : x(1, 1) = 1   x(1, 2) = 2      x(1, 3) = 3              Write to Buffer : y[1][1]
-
-		// Tile idx = 2:
-		//Read From Input : x(2, 0) = 0   x(2, 1) = 5      x(2, 2) = 6              Write to Buffer : y[2][0]
-		//Read From Input : x(2, 1) = 5   x(2, 2) = 6      x(2, 3) = 7              Write to Buffer : y[2][1]
-
-		// Tile idx = 3:
-		//Read From Input : x(3, 0) = 0    x(3, 1) = 9      x(3, 2) = 10            Write to Buffer : y[3][0]
-		//Read From Input : x(3, 1) = 10   x(3, 2) = 11     x(3, 3) = 12            Write to Buffer : y[3][1]
-
-
-		/// Stage 2: Write to output:
-		//Read from Buffer : y(0, 0) = ?   y(1, 0) = ?      y(2, 0) = ?             Write to Output : z(0, 0) = ?
-		//Read from Buffer : y(1, 0) = ?   y(2, 0) = ?      y(3, 0) = ?             Write to Output : z(1, 0) = ?
-
-		//Read from Buffer : y(0, 1) = ?   y(1, 1) = ?      y(2, 1) = ?             Write to Output : z(0, 1) = ?
-		//Read from Buffer : y(1, 1) = ?   y(2, 1) = ?      y(3, 1) = ?             Write to Output : z(1, 1) = ?
-
-
-
 		auto loop_print = [=](size_t i, size_t j, float val, string name) -> void
 		{cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
 
-
-		// TODO: Change buffer to 1D-array
 		float y[4][2] = { 0 };
-		//float y[4 * 2] = {};
-
 		float z[4][4] = { 0 };
 
 		int tile_num = 1;
 		for (size_t n1 = 0; n1 < N; n1+=2)
 		{
-
 			for (size_t n2 = 0; n2 < N; n2+=2)
 			{
 				cout << "===========================\n";
@@ -428,9 +388,7 @@ namespace two_D
 					<< tile_num++ << "\n";
 				cout << "===========================\n";
 
-
 				// Tile loop:
-				//size_t tile_idx(0);
 				for (size_t bi = 0; bi < 4; bi++) // tile-row
 				{
 					for (size_t bj = 0; bj < 2; bj++) // tile-col
@@ -448,23 +406,13 @@ namespace two_D
 						size_t i = bi;
 						size_t j = bj;
 
-						// TODO: Change buffer to 1D-array
 						y[i][j] = sum;
-						//y[tile_idx++] = sum;
 
 						cout << "\tWrite to Buffer:  ";
 						loop_print(i, j, y[i][j], "y");
 						getchar();
-
 					} // bi
-
 				} // bj
-
-				//cout << "======Read from Buffer=====\n";
-				//cout << "======Write to Output=======\n";
-
-
-
 
 				for (size_t bj = 0; bj < 2; bj++) // tile-col
 				{
@@ -481,6 +429,96 @@ namespace two_D
 							// TODO: Change buffer to 1D-array
 							
 							
+							// This indexing is off
+							sum += y[i][j];
+
+
+
+							loop_print(i, j, y[i][j], "y");
+						}
+
+						// This output index is  wrong
+						int i = n1 + bi;
+						int j = n2 + bj;
+
+						// This index is off!
+
+						z[i][j] = sum;
+						cout << "\tWrite to Output:  ";
+						loop_print(i, j, z[i][j], "z");
+						getchar();
+					}
+				}
+
+
+			} // n2
+		} // n1
+	}
+	// - - - - - - - - - - - - - - - -
+	template <size_t rows, size_t cols>
+	void conv_5(float(&x_zp)[rows][cols])
+	{
+		// Imp-4: Tiled
+
+		auto loop_print = [=](size_t i, size_t j, float val, string name) -> void
+		{cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
+
+		float y[4][2] = { 0 };
+		float z[8][8] = { 0 };
+
+		int tile_num = 1;
+		for (size_t n1 = 0; n1 < 8; n1 += 2)
+		{
+			// Changed from n2<8 to n2<4 to fix tile-3
+
+			for (size_t n2 = 0; n2 < 8; n2 += 2)
+			{
+				cout << "===========================\n";
+				cout << "        Tile #"
+					<< tile_num++ << "\n";
+				cout << "===========================\n";
+
+				// Tile loop:
+				for (size_t bi = 0; bi < 4; bi++) // tile-row
+				{
+					for (size_t bj = 0; bj < 2; bj++) // tile-col
+					{
+						// Do 1-D conv here				
+						float sum = 0.f;
+						cout << "Read From Input:   ";
+						for (size_t k2 = 0; k2 != K; k2++)
+						{
+							int i = n1 + bi;
+							int j = n2 + k2 + bj;
+							sum += x_zp[i][j];
+							loop_print(i, j, x_zp[i][j], "x");
+						}
+						size_t i = bi;
+						size_t j = bj;
+
+						y[i][j] = sum;
+
+						cout << "\tWrite to Buffer:  ";
+						loop_print(i, j, y[i][j], "y");
+						getchar();
+					} // bi
+				} // bj
+
+				for (size_t bj = 0; bj < 2; bj++) // tile-col
+				{
+					for (size_t bi = 0; bi < 2; bi++) // tile-row
+					{
+						cout << "Read from Buffer:  ";
+						float sum = 0;
+						for (size_t k1 = 0; k1 < 3; k1++)
+						{
+							int i = bi + k1;
+							int j = bj;// oj + n2;
+
+
+							// TODO: Change buffer to 1D-array
+
+
 							// This indexing is off
 							sum += y[i][j];
 
@@ -736,5 +774,38 @@ namespace two_D
 
 		getchar();
 	}
+	// - - - - - - - - - - - - - - - - 
+	void imp_5()
+	{
+		// Generalize imp_4 up:
+		// -Step 1: Same as Imp-4 (Tiled) but with 8x8
+		// -Step 2: 8x8 with tile scaled up
+		// -Step 3: Scale up to image
 
+		float x[8][8] = {
+			{ 1, 2, 3, 4, 5, 6, 7, 8},
+			{ 9,10,11,12,13,14,15,16},
+			{17,18,19,20,21,22,23,24},
+			{25,26,27,28,29,30,31,32},
+			{33,34,35,36,37,38,39,40},
+			{41,42,43,44,45,46,47,48},
+			{49,50,51,52,53,54,55,56},
+			{57,58,59,60,61,62,63,64}
+		};
+
+		// Zero-pad
+		//ArrStruct_zp x_zp = pad(x);
+		float x_[10][10] = {};
+		for (size_t n1 = P; n1 != 10 - P; ++n1)
+			for (size_t n2 = P; n2 != 10 - P; ++n2)
+				x_[n1][n2] = x[n1 - P][n2 - P];
+
+		// Display
+		print("After zero-padding", x_);
+
+		// Do conv
+		conv_5(x_);
+
+		getchar();
+	}
 } // namespace two_D

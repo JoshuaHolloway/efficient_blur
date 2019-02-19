@@ -27,7 +27,8 @@ int main()
 	//cv::Mat y = two_D::two_D_image(x);
 	//two_D::imp_1();
 	//two_D::imp_2();
-	//two_D::im[_3();
-	two_D::imp_4();
+	//two_D::imp_3();
+	//two_D::imp_4();
+	two_D::imp_5();
 	return 0;
 }
