@@ -1,10 +1,13 @@
+#include <matlab_engine.h>
 #include "Timer.h"
 #include "2D_arrays.h"
 #include "2D.h"
 #include "1D.h"
 // - - - - - - - - - - - - - - - - 
-int main()
+auto main() -> int
 {
+	Matlab::Matlab matlab;
+
 	Timer<> timer1;
 	Timer<std::chrono::seconds> timer2;
 
@@ -30,6 +33,7 @@ int main()
 	//two_D::imp_3();
 	//two_D::imp_4();
 	//two_D::imp_4_input8x8_tile4x4();
-	two_D::imp_4_input8x8_tile6x6();
+	//two_D::imp_4_input8x8_tile6x6();
+	two_D::imp_4_input8x8_tile6x6_dynamic();
 	return 0;
 }

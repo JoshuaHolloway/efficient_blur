@@ -56,7 +56,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\include;$(SolutionDir)matlab_engine\src;$(MATLABROOT)\extern\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\lib</AdditionalLibraryDirectories>
@@ -71,7 +71,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\include;$(SolutionDir)matlab_engine\src;$(MATLABROOT)\extern\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -87,6 +87,11 @@
     <ClInclude Include="src\2D.h" />
     <ClInclude Include="src\2D_arrays.h" />
     <ClInclude Include="src\Timer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\matlab_engine\matlab_engine.vcxproj">
+      <Project>{8e79c0d9-8484-4063-89d4-5caa1bfe9033}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

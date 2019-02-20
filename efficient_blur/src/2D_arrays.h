@@ -2,11 +2,7 @@
 #include <iostream>
 using std::cout;
 
-// TODO: Modify the current version of conv to work on arbitrary size image
-//			-Returning the 2D-array via a struct prohibits the variable size.
-//			-This should be fixed by using a dynamic 2D array.
-
-// Returning 2D-Arrays from functionss
+// Returning 2D-Arrays from functions
 // https://stackoverflow.com/questions/8767166/passing-a-2d-array-to-a-c-function
 
 // Passing 2D-Arrays into functions
