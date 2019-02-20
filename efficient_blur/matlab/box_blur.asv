@@ -13,7 +13,8 @@ x = double(rgb2gray(imread('lena_512.png')));
 
 h = [1,1,1];
 
-y = zeros(N,N);
+y = zeros(N,N); % I think this grows in loop
+
 for i = 1:4
     y(:,i) = conv(x(i,:),h,'same')';
 end

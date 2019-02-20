@@ -1111,6 +1111,8 @@ namespace two_D
 		/// -Step 2: Imp-4 with 8x8 input and 6x6 tile
 		///		=>Done in this function
 		// -Step 3: Scale up to image
+		// -Step 4: Scale up to image
+		// -Step 5: Use actual pixel data as input
 
 		float x[8][8] = {
 			{ 1, 2, 3, 4, 5, 6, 7, 8},
@@ -1146,7 +1148,8 @@ namespace two_D
 		/// -Step 3: Use dynamic array as input
 		///		=>Done in this function
 		// -Step 4: Scale up to image
-		
+		// -Step 5: Use actual pixel data as input
+
 		// toy image size
 		constexpr size_t img_size = 8;
 		constexpr size_t img_zp_size = img_size + 2*P;
@@ -1174,14 +1177,14 @@ namespace two_D
 				x_[lin(n1,n2, img_zp_size)] = x[n1 - P][n2 - P];
 			}
 		
-		float* return_arr = conv_4_input8x8_tile6x6_dynamic(x_);
+		float* z = conv_4_input8x8_tile6x6_dynamic(x_);
 
 #ifdef PRINT
 		// Display
 		print("After zero-padding", x_, img_zp_size, img_zp_size);
-		print("\nAfter conv", return_arr, 8, 8);
+		print("\nAfter conv", z, 8, 8);
 #endif
-		return return_arr;
+		return z;
 	}
 	// - - - - - - - - - - - - - - - - 
 	float* imp_4_input16x16_tile6x6_dynamic()
@@ -1192,6 +1195,7 @@ namespace two_D
 		// -Step 3: Use dynamic array as input
 		/// -Step 4: Scale up to image
 		///		=>Done in this function
+		// -Step 5: Use actual pixel data as input
 
 		// toy image size
 		constexpr size_t img_size = 16;
@@ -1212,14 +1216,49 @@ namespace two_D
 			for (size_t n2 = P; n2 != img_zp_size - P; ++n2)
 				x_[lin(n1, n2, img_zp_size)] = x[n1 - P][n2 - P];
 
-		float* return_arr = conv_4_tile6x6(x_, img_size, img_size);
+		float* z = conv_4_tile6x6(x_, img_size, img_size);
 
 #ifdef PRINT
 		// Display
 		print("After zero-padding", x_, img_zp_size, img_zp_size);
-		print("\nAfter conv", return_arr, 8, 8);
+		print("\nAfter conv", z, 16, 16);
 #endif
-		return return_arr;
+		return z;
+	}
+	// - - - - - - - - - - - - - - - - 
+	float* imp_4_general_tile6x6(cv::Mat mat)
+	{
+		// -Step 1: Same as Imp-4 (Tiled) but with 8x8 input (4x4-tile)
+		// -Step 2: Imp-4 with 8x8 input and 6x6 tile
+		// -Step 3: Use dynamic array as input
+		// -Step 4: Scale up to image
+		// -Step 5: Use pixel data as input
+		///		=>Done in this function
+
+		// single float square
+		//assert(mat.type() == CV_32FC1);
+		assert(mat.rows == mat.cols);
+
+		// toy image size
+		const size_t img_size = mat.rows;
+		const size_t img_zp_size = img_size + 2 * P;
+
+		// Zero-pad
+		float* x_ = new float[img_zp_size * img_zp_size];
+		for (int i = 0; i < img_zp_size * img_zp_size; ++i)
+			*(x_ + i) = 0;
+		for (size_t n1 = P; n1 != img_zp_size - P; ++n1)
+			for (size_t n2 = P; n2 != img_zp_size - P; ++n2)
+				x_[lin(n1, n2, img_zp_size)] = (float)mat.data[lin(n1 - P, n2 - P, img_size)];
+
+		float* z = conv_4_tile6x6(x_, img_size, img_size);
+
+#ifdef PRINT
+		// Display
+		print("After zero-padding", x_, img_zp_size, img_zp_size);
+		print("\nAfter conv", z, M_, N_);
+#endif
+		return z;
 	}
 
 } // namespace two_D
