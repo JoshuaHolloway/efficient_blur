@@ -10,7 +10,7 @@ N = 512;
 % x = reshape(x,[N,N])'
 x = double(rgb2gray(imread('lena_512.png')));
 
-h = ones(3,3);
+h = ones(3,3) ./ 9;
 z_gold = conv2(x,h,'same');
 
 figure, 

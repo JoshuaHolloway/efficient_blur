@@ -33,7 +33,7 @@ auto main() -> int
 	// Organizing code to run experiments on imp-1 vs. imp-4
 	// Step 1: Create separate file for imp-4
 	// Step 2: Create separate file for imp-1
-	/// Step 3: Modify both to use normalized taps
+	/// Step 3: Modify imp-1 and imp-4 to both use normalized taps
 	// Step 4: Fix imp-1 to write to buffer already 
 	//			zero-padded to match imp-4
 	// Step 5: Scale up imp-1 to images
@@ -41,7 +41,7 @@ auto main() -> int
 
 	/// Imp-1
 									 // prototype
-	float* z1 = naive::imp_4_general(x_f, N); // final
+	float* z1 = naive::imp_1_general(x_f, N); // final
 
 
 	/// Imp-4

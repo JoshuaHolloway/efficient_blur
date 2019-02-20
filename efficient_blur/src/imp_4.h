@@ -492,6 +492,8 @@ namespace tiled
 		float* y = new float[buffer_height * buffer_width];
 		float* z = new float[output_height * output_width];
 
+		float box_amplitude = 1 / float(K);
+
 		int tile_num = 1;
 		for (size_t n1 = 0; n1 != output_height; n1 += output_block_height)
 		{
@@ -524,7 +526,7 @@ namespace tiled
 						}
 						size_t i = bi;
 						size_t j = bj;
-						y[lin(i, j, buffer_width)] = sum;
+						y[lin(i, j, buffer_width)] = sum * box_amplitude;
 #ifdef PRINT
 						cout << "\tWrite to Buffer:  ";
 						loop_print(i, j, y[i][j], "y");
@@ -551,7 +553,7 @@ namespace tiled
 						}
 						int i = n1 + bi;
 						int j = n2 + bj;
-						z[lin(i, j, output_width)] = sum;
+						z[lin(i, j, output_width)] = sum * box_amplitude;
 
 #ifdef PRINT
 						cout << "\tWrite to Output:  ";
