@@ -739,28 +739,28 @@ namespace two_D
 		auto loop_print = [=](size_t i, size_t j, float val, string name) -> void
 		{cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
 
-		// TODO: change this to variable size by getting rid of the static array
-		constexpr size_t output_height = 16;
-		constexpr size_t output_width = 16;
+		const size_t output_height = M_;
+		const size_t output_width = N_;
 
 		// Zero padded size
-		constexpr size_t input_height = output_height + 2 * P;
-		constexpr size_t input_width = output_width + 2 * P;
+		const size_t input_height = output_height + 2 * P;
+		const size_t input_width = output_width + 2 * P;
 
 		// Input tile-size
-		constexpr size_t tile_height = 6;
-		constexpr size_t tile_width = 6;
+		const size_t tile_height = 6;
+		const size_t tile_width = 6;
 
 		// Output tile-size
-		constexpr size_t output_block_height = tile_height - 2 * P;
-		constexpr size_t output_block_width = tile_width - 2 * P;
+		const size_t output_block_height = tile_height - 2 * P;
+		const size_t output_block_width = tile_width - 2 * P;
 
 		// Intermediate buffer-size
-		constexpr size_t buffer_height = tile_height;
-		constexpr size_t buffer_width = tile_width - 2 * P;
+		const size_t buffer_height = tile_height;
+		const size_t buffer_width = tile_width - 2 * P;
 
-		float y[buffer_height][buffer_width] = { 0 };
-		float z[output_height][output_width] = { 0 };
+		// Allocate space for buffer and output
+		float* y = new float[buffer_height * buffer_width];
+		float* z = new float[output_height * output_width];
 
 		int tile_num = 1;
 		for (size_t n1 = 0; n1 != output_height; n1 += output_block_height)
@@ -773,7 +773,6 @@ namespace two_D
 					<< tile_num++ << "\n";
 				cout << "===========================\n";
 #endif
-
 				// Tile loop:
 				for (size_t bi = 0; bi != buffer_height; ++bi) // tile-row
 				{
@@ -788,7 +787,6 @@ namespace two_D
 						{
 							int i = n1 + bi;
 							int j = n2 + k2 + bj;
-
 							sum += x_zp[lin(i, j, input_width)];
 #ifdef PRINT
 							loop_print(i, j, x_zp[lin(i, j, input_width)], "x");
@@ -796,13 +794,10 @@ namespace two_D
 						}
 						size_t i = bi;
 						size_t j = bj;
-
-						y[i][j] = sum;
-
+						y[lin(i, j, buffer_width)] = sum;
 #ifdef PRINT
 						cout << "\tWrite to Buffer:  ";
 						loop_print(i, j, y[i][j], "y");
-						getchar();
 #endif
 					} // bi
 				} // bj
@@ -811,28 +806,26 @@ namespace two_D
 				{
 					for (size_t bi = 0; bi != output_block_width; ++bi) // tile-row
 					{
-						//cout << "Read from Buffer:  ";
+#ifdef PRINT
+						cout << "Read from Buffer:  ";
+#endif
 						float sum = 0;
 						for (size_t k1 = 0; k1 != K; k1++)
 						{
 							int i = bi + k1;
 							int j = bj;
-
-							sum += y[i][j];
+							sum += y[lin(i,j,buffer_width)];
 #ifdef PRINT
 							loop_print(i, j, y[i][j], "y");
 #endif
 						}
-
 						int i = n1 + bi;
 						int j = n2 + bj;
-
-						z[i][j] = sum;
+						z[lin(i,j,output_width)] = sum;
 
 #ifdef PRINT
 						cout << "\tWrite to Output:  ";
-						loop_print(i, j, z[i][j], "z");
-						getchar();
+						loop_print(i, j, z[lin(i, j, output_width)], "z");
 #endif
 					}
 				}
@@ -840,16 +833,11 @@ namespace two_D
 		} // n1
 
 #ifdef PRINT
-		print("z", z);
+		print("z", z, output_height, output_width);
 #endif
-		float* z_f = new float[output_height * output_width];
-		for (int i = 0; i != output_height; ++i)
-			for (int j = 0; j != output_width; ++j)
-				z_f[i * output_width + j] = z[i][j];
-		return z_f;
-	}
 
-	
+		return z;
+	}
 
 	// - - - - - - - - - - - - - - - - 
 	template <size_t rows, size_t cols, typename T>
