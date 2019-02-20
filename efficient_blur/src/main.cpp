@@ -26,13 +26,16 @@ auto main() -> int
 	//two_D::imp_4_input8x8_tile4x4();
 	//two_D::imp_4_input8x8_tile6x6();
 	
-	float* imp_4_input8x8_tile6x6_dynamic_var = two_D::imp_4_input8x8_tile6x6_dynamic();
+	//float* imp_4_input8x8_tile6x6_dynamic_var = two_D::imp_4_input8x8_tile6x6_dynamic();
+	float* imp_4_input16x16_tile6x6_dynamic_var = two_D::imp_4_input16x16_tile6x6_dynamic();
 	
 #ifdef MATLAB
 	// Compare result against golden reference
 	Matlab::Matlab matlab;
-	matlab.pass_2D_into_matlab(imp_4_input8x8_tile6x6_dynamic_var, 8, 8, "cpp");
-	matlab.command("box_blur_8x8");
+	matlab.pass_2D_into_matlab(imp_4_input16x16_tile6x6_dynamic_var, 16, 16, "cpp");
+	matlab.command("box_blur_16x16");
 #endif
+
+	delete[] imp_4_input16x16_tile6x6_dynamic_var;
 	return 0;
 }

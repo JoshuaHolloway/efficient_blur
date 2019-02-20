@@ -1,6 +1,6 @@
 close all, clc;
 
-N = 8;
+N = 16;
 
 x = 1:N*N;
 
