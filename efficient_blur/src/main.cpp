@@ -1,8 +1,5 @@
 #include <matlab_engine.h>
 #include "Timer.h"
-#include "2D_arrays.h"
-#include "2D.h"
-#include "1D.h"
 #include "imp_4.h"
 #include "imp_1.h"
 // - - - - - - - - - - - - - - - -
@@ -28,33 +25,21 @@ auto main() -> int
 	const cv::Mat x_mat = cv::imread("lena_512.png", CV_LOAD_IMAGE_GRAYSCALE);
 	const size_t M = x_mat.rows, N = x_mat.cols;
 	assert(M == N);
-	float* x_f = mat2arr(x_mat);
+	const float* x_f = mat2arr(x_mat);
 
-	// Organizing code to run experiments on imp-1 vs. imp-4
-	// Step 1: Create separate file for imp-4
-	// Step 2: Create separate file for imp-1
-	/// Step 3: Modify imp-1 and imp-4 to both use normalized taps
-	// Step 4: Fix imp-1 to write to buffer already 
-	//			zero-padded to match imp-4
-	// Step 5: Scale up imp-1 to images
-
-
-	/// Imp-1
-									 // prototype
-	float* z1 = naive::imp_1_general(x_f, N); // final
-
+	/// Imp-1 - TODO: Write to buffer already zero-padded
+                                              // prototype
+	const float* z1 = naive::imp_1_general(x_f, N); // final
 
 	/// Imp-4
 	//tiled::imp_4(); // prototype
-	float* z4 = tiled::imp_4_general_tile6x6(x_f, N); // final
+	const float* z4 = tiled::imp_4_general_tile6x6(x_f, N); // final
 	
 #ifdef MATLAB
 	// Compare result against golden reference
 	Matlab::Matlab matlab;
 	matlab.pass_2D_into_matlab(z1, M, N, "z1_cpp");
 	matlab.pass_2D_into_matlab(z4, M, N, "z4_cpp");
-
-	// TODO: Modify script to test imp-1
 	matlab.command("box_blur");
 #endif
 

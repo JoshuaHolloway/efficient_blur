@@ -21,3 +21,6 @@ subplot(3,1,2), imshow(z1_cpp, []), title(error_z1);
 
 error_z4 = sprintf('C++ Imp-4\nL2-norm: %2.2f',norm(abs(z_gold-z4_cpp),2))
 subplot(3,1,3), imshow(z4_cpp, []), title(error_z4);
+
+figure
+mesh(abs(z_gold-z1_cpp))

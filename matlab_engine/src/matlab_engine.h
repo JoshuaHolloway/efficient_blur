@@ -18,6 +18,6 @@ namespace Matlab
 		~Matlab();
 		void command(std::string);
 		void working_directory();
-		void pass_2D_into_matlab(float*, size_t, size_t, std::string);
+		void pass_2D_into_matlab(const float*, size_t, size_t, std::string);
 	};
 }

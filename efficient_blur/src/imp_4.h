@@ -568,6 +568,9 @@ namespace tiled
 		print("z", z, output_height, output_width);
 #endif
 
+		// TODO: Free memory
+		//delete[] y;
+
 		return z;
 	}
 	// ===============================
@@ -710,6 +713,9 @@ namespace tiled
 		print("After zero-padding", x_, img_zp_size, img_zp_size);
 		print("\nAfter conv", z, 8, 8);
 #endif
+		// TODO: Free memory
+		delete[] x_;
+
 		return z;
 	}
 	// - - - - - - - - - - - - - - - - 
@@ -749,6 +755,9 @@ namespace tiled
 		print("After zero-padding", x_, img_zp_size, img_zp_size);
 		print("\nAfter conv", z, 16, 16);
 #endif
+		// TODO: Free memory
+		//delete[] x_;
+
 		return z;
 	}
 	// - - - - - - - - - - - - - - - - 
@@ -764,7 +773,10 @@ namespace tiled
 		for (size_t n1 = P; n1 != img_zp_size - P; ++n1)
 			for (size_t n2 = P; n2 != img_zp_size - P; ++n2)
 				x_[lin(n1, n2, img_zp_size)] = x_f[lin(n1 - P, n2 - P, img_size)];
-
-		return conv_4_tile6x6(x_, img_size, img_size);
+		
+		float *z = conv_4_tile6x6(x_, img_size, img_size);
+		
+		delete[] x_;
+		return z;
 	}
 }

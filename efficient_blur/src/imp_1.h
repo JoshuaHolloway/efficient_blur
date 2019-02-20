@@ -29,21 +29,44 @@ namespace naive
 		for (int i = 0; i < Q*Q; ++i)
 			x_zp[i] = 0;
 
-		float* local_arr = new float[Q * Q];
 		for (size_t n1 = P; n1 != Q - P; ++n1)
 			for (size_t n2 = P; n2 != Q - P; ++n2)
 				x_zp[lin(n1, n2, Q)] = x[lin(n1 - P, n2 - P, N)];
 		return x_zp;
 	}
 	// - - - - - - - - - - - - - - - -
-	float* conv(float* x_zp, size_t N)
+	float* conv(const float* x_zp, size_t N)
 	{
 		// Coefficients of the 2D-FIR filter
 		float box_amplitude = 1 / float(K);
 
-		const size_t Q = N + 2 * P; // Full zero-padded size
+		// Full zero-padded size
+		const size_t Q = N + 2 * P; 
 
-		float* y = new float[N * N];
+		// Buffer
+		float* y = new float[Q * Q];
+		for (int i = 0; i < Q*Q; ++i)
+			y[i] = 0;
+
+		// Do 1D-conv across rows, 
+		// Implicitly zero-pad output
+		// Implicitly write in transposed form
+		for (size_t n1 = P; n1 < Q - P; n1++)
+			for (size_t n2 = P; n2 != Q - P; ++n2)
+			{
+				float sum = 0.f;
+				for (size_t k2 = 0; k2 != K; k2++)
+				{
+					int i = n1;
+					int j = n2 + k2 - P;
+					sum += x_zp[lin(i, j, Q)];
+				}
+				y[lin(n2, n1, Q)] = sum * box_amplitude;
+			}
+
+		// Do 1D-conv across the rows
+		// Implicitly write in transposed form
+		float* z = new float[N * N];
 		for (size_t n1 = P; n1 < Q - P; n1++)
 			for (size_t n2 = 0; n2 < N; n2++)
 			{
@@ -52,22 +75,21 @@ namespace naive
 				{
 					int i = n1;
 					int j = n2 + k2;
-					sum += x_zp[lin(i, j, Q)];
+					sum += y[lin(i, j, Q)];
 				}
-				y[lin(n2, n1 - P, N)] = sum * box_amplitude;
+				z[lin(n2, n1 - P, N)] = sum * box_amplitude;
 			}
 
-		return y;
+		delete[] y;
+		return z;
 	}
 	// - - - - - - - - - - - - - - - - 
 	float* imp_1_general(const float* x_f, const size_t N)
 	{
-		float* x_f_zp = pad(x_f, N);
-		float* y_f = conv(x_f_zp, N);
-		float* y_f_zp = pad(y_f, N);
-		float* z_f = conv(y_f_zp, N);
+		float* x_zp = pad(x_f, N);
+		float* z_f = conv(x_zp, N);
 
-		delete[] x_f_zp, y_f, y_f_zp;
+		delete[] x_zp;
 		return z_f;
 	}
 }

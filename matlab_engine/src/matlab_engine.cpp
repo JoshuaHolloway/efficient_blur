@@ -71,7 +71,7 @@ namespace Matlab
 		command("cd ../../matlab");
 	}
 	//=====================================================
-	void Matlab::pass_2D_into_matlab(float* data, size_t M, size_t N, std::string name)
+	void Matlab::pass_2D_into_matlab(const float* data, size_t M, size_t N, std::string name)
 	{
 		auto lin = [](size_t idx, size_t jdx, size_t K) -> size_t { return idx * K + jdx; };
 
