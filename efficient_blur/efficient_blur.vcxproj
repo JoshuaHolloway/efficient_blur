@@ -85,6 +85,7 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\imp_1.h" />
     <ClInclude Include="src\imp_4.h" />
     <ClInclude Include="src\1D.h" />
     <ClInclude Include="src\2D.h" />

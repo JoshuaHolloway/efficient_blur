@@ -750,7 +750,7 @@ namespace tiled
 		return z;
 	}
 	// - - - - - - - - - - - - - - - - 
-	float* imp_4_general_tile6x6(cv::Mat mat)
+	float* imp_4_general_tile6x6(const cv::Mat& mat)
 	{
 		// -Step 1: Same as Imp-4 (Tiled) but with 8x8 input (4x4-tile)
 		// -Step 2: Imp-4 with 8x8 input and 6x6 tile
