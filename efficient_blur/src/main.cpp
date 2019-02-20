@@ -3,19 +3,10 @@
 #include "2D_arrays.h"
 #include "2D.h"
 #include "1D.h"
+
 // - - - - - - - - - - - - - - - - 
 auto main() -> int
 {
-	Matlab::Matlab matlab;
-
-	Timer<> timer1;
-	Timer<std::chrono::seconds> timer2;
-
-	std::vector<int> v(5e6);
-	std::sort(std::begin(v), std::end(v));
-	timer1.end();
-
-
 	cv::Mat x = cv::imread("lena_512.png",CV_LOAD_IMAGE_GRAYSCALE);
 	//cv::imshow("mat", mat);
 	//cv::waitKey(0);
@@ -34,6 +25,14 @@ auto main() -> int
 	//two_D::imp_4();
 	//two_D::imp_4_input8x8_tile4x4();
 	//two_D::imp_4_input8x8_tile6x6();
-	two_D::imp_4_input8x8_tile6x6_dynamic();
+	
+	float* imp_4_input8x8_tile6x6_dynamic_var = two_D::imp_4_input8x8_tile6x6_dynamic();
+	
+#ifdef MATLAB
+	// Compare result against golden reference
+	Matlab::Matlab matlab;
+	matlab.pass_2D_into_matlab(imp_4_input8x8_tile6x6_dynamic_var, 8, 8, "cpp");
+	matlab.command("box_blur_8x8");
+#endif
 	return 0;
 }

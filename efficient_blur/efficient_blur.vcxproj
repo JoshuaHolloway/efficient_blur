@@ -57,6 +57,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\include;$(SolutionDir)matlab_engine\src;$(MATLABROOT)\extern\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>MATLAB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\lib</AdditionalLibraryDirectories>
@@ -72,6 +73,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\include;$(SolutionDir)matlab_engine\src;$(MATLABROOT)\extern\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>MATLAB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>

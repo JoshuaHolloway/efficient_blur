@@ -12,11 +12,12 @@ namespace Matlab
 	{
 	private:
 		Engine*  ep;      // Pointer to a MATLAB Engine
-		mxArray* mx_Arr;  // To store the image data inside MATLAB
+		//mxArray* mx_Arr;  // To store the image data inside MATLAB
 	public:
 		Matlab();
 		~Matlab();
-		void command(std::string str);
+		void command(std::string);
 		void working_directory();
+		void pass_2D_into_matlab(float*, size_t, size_t, std::string);
 	};
 }

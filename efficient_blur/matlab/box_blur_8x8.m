@@ -1,4 +1,4 @@
-clc, clear, close all;
+close all, clc;
 
 N = 8;
 
@@ -21,3 +21,8 @@ z_seperable = z % Transposing implicitly
 
 h = ones(3,3);
 z_gold = conv2(x,h,'same')
+
+figure, 
+subplot(2,1,1), imshow(z_gold,[]), title('golden reference');
+error = sprintf('L2-norm: %2.2f',norm(abs(z_gold-cpp),2))
+subplot(2,1,2), imshow(cpp, []), title(error);

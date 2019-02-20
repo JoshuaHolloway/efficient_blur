@@ -46,7 +46,6 @@ namespace two_D
 	}
 	void print(std::string str, const float* x, size_t rows, size_t cols)
 	{
-
 		auto loop_print = [=](size_t i, size_t j, float val, string name) -> void
 		{cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
 
@@ -622,7 +621,7 @@ namespace two_D
 		} // n1
 	}
 	// - - - - - - - - - - - - - - - -
-	void conv_4_input8x8_tile6x6_dynamic(float*x_zp)
+	float* conv_4_input8x8_tile6x6_dynamic(float*x_zp)
 	{
 		// Imp-4: 8x8 input and 6x6 tile
 		// with dynamic array as input
@@ -646,73 +645,90 @@ namespace two_D
 		float z[output_height][output_width] = { 0 };
 
 		int tile_num = 1;
-		for (size_t n1 = 0; n1 < output_height; n1 += output_block_height)
+		for (size_t n1 = 0; n1 != output_height; n1 += output_block_height)
 		{
-			for (size_t n2 = 0; n2 < output_width; n2 += output_block_width)
+			for (size_t n2 = 0; n2 != output_width; n2 += output_block_width)
 			{
-				//cout << "===========================\n";
-				//cout << "        Tile #"
-				//	<< tile_num++ << "\n";
-				//cout << "===========================\n";
+#ifdef PRINT
+				cout << "===========================\n";
+				cout << "        Tile #"
+					<< tile_num++ << "\n";
+				cout << "===========================\n";
+#endif
 
 				// Tile loop:
-				for (size_t bi = 0; bi < buffer_height; bi++) // tile-row
+				for (size_t bi = 0; bi != buffer_height; ++bi) // tile-row
 				{
-					for (size_t bj = 0; bj < buffer_width; bj++) // tile-col
+					for (size_t bj = 0; bj != buffer_width; ++bj) // tile-col
 					{
 						// Do 1-D conv here				
 						float sum = 0.f;
-						//cout << "Read From Input:   ";
-						for (size_t k2 = 0; k2 != K; k2++)
+#ifdef PRINT
+						cout << "Read From Input:   ";
+#endif
+						for (size_t k2 = 0; k2 != K; ++k2)
 						{
 							int i = n1 + bi;
 							int j = n2 + k2 + bj;
 
-							//sum += x_zp[i][j];
-							sum += x_zp[lin(i,j,10)];
-							
-							//loop_print(i, j, x_zp[lin(i,j,10)], "x");
+							sum += x_zp[lin(i,j,10)];					
+#ifdef PRINT
+							loop_print(i, j, x_zp[lin(i,j,10)], "x");
+#endif
 						}
 						size_t i = bi;
 						size_t j = bj;
 
 						y[i][j] = sum;
 
-						//cout << "\tWrite to Buffer:  ";
-						//loop_print(i, j, y[i][j], "y");
-						//getchar();
+#ifdef PRINT
+						cout << "\tWrite to Buffer:  ";
+						loop_print(i, j, y[i][j], "y");
+						getchar();
+#endif
 					} // bi
 				} // bj
 
-				for (size_t bj = 0; bj < output_block_height; bj++) // tile-col
+				for (size_t bj = 0; bj != output_block_height; ++bj) // tile-col
 				{
-					for (size_t bi = 0; bi < output_block_width; bi++) // tile-row
+					for (size_t bi = 0; bi != output_block_width; ++bi) // tile-row
 					{
 						//cout << "Read from Buffer:  ";
 						float sum = 0;
-						for (size_t k1 = 0; k1 < 3; k1++)
+						for (size_t k1 = 0; k1 != K; k1++)
 						{
 							int i = bi + k1;
 							int j = bj;
 
 							sum += y[i][j];
-							//loop_print(i, j, y[i][j], "y");
+#ifdef PRINT
+							loop_print(i, j, y[i][j], "y");
+#endif
 						}
 
 						int i = n1 + bi;
 						int j = n2 + bj;
 
 						z[i][j] = sum;
-						//cout << "\tWrite to Output:  ";
-						//loop_print(i, j, z[i][j], "z");
-						//getchar();
+
+#ifdef PRINT
+						cout << "\tWrite to Output:  ";
+						loop_print(i, j, z[i][j], "z");
+						getchar();
+#endif
 					}
 				}
 			} // n2
 		} // n1
 
+#ifdef PRINT
 		print("z", z);
-
+#endif
+		float* z_f = new float[output_height * output_width];
+		for (int i = 0; i != output_height; ++i)
+			for (int j = 0; j != output_width; ++j)
+				z_f[i * output_width + j] = z[i][j];
+		return z_f;
 	}
 
 
@@ -1015,7 +1031,7 @@ namespace two_D
 		getchar();
 	}
 	// - - - - - - - - - - - - - - - - 
-	void imp_4_input8x8_tile6x6_dynamic()
+	float* imp_4_input8x8_tile6x6_dynamic()
 	{
 		// Generalize imp_4 up:
 		// -Step 1: Same as Imp-4 (Tiled) but with 8x8 input (4x4-tile)
@@ -1024,8 +1040,11 @@ namespace two_D
 		///		=>Done in this function
 		// -Step 4: Scale up to image
 		
+		// toy image size
+		constexpr size_t img_size = 8;
+		constexpr size_t img_zp_size = img_size + 2*P;
 
-		float x[8][8] = {
+		float x[img_size][img_size] = {
 			{ 1, 2, 3, 4, 5, 6, 7, 8},
 			{ 9,10,11,12,13,14,15,16},
 			{17,18,19,20,21,22,23,24},
@@ -1037,25 +1056,25 @@ namespace two_D
 		};
 
 		// Zero-pad
-		//float x_[10][10] = {};
-		float* x_ = new float[10*10];
-		for (int i = 0; i < 10 * 10; ++i)
+		float* x_ = new float[img_zp_size * img_zp_size];
+		for (int i = 0; i < img_zp_size * img_zp_size; ++i)
 			*(x_ + i) = 0;
 
-		for (size_t n1 = P; n1 != 10 - P; ++n1)
-			for (size_t n2 = P; n2 != 10 - P; ++n2)
+		for (size_t n1 = P; n1 != img_zp_size - P; ++n1)
+			for (size_t n2 = P; n2 != img_zp_size - P; ++n2)
 			{
 				//x_[n1][n2] = x[n1 - P][n2 - P];
-				x_[lin(n1,n2,10)] = x[n1 - P][n2 - P];
+				x_[lin(n1,n2, img_zp_size)] = x[n1 - P][n2 - P];
 			}
 		
+		float* return_arr = conv_4_input8x8_tile6x6_dynamic(x_);
+
+#ifdef PRINT
 		// Display
-		print("After zero-padding", x_, 10, 10);
-
-		// Do conv
-		conv_4_input8x8_tile6x6_dynamic(x_);
-
-		getchar();
+		print("After zero-padding", x_, img_zp_size, img_zp_size);
+		print("\nAfter conv", return_arr, 8, 8);
+#endif
+		return return_arr;
 	}
 
 } // namespace two_D

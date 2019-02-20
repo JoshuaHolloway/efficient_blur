@@ -11,6 +11,7 @@ public:
 		std::chrono::steady_clock>;
 	
 	Timer() = default;
+	~Timer() = default;
 
 	void end()
 	{
@@ -19,9 +20,16 @@ public:
 			<< std::endl;
 	}
 
-	~Timer()
+	void example()
 	{
+		//Timer<> timer1;
+		//Timer<std::chrono::seconds> timer2;
+		//
+		//std::vector<int> v(5e6);
+		//std::sort(std::begin(v), std::end(v));
+		//timer1.end();
 	}
+
 private:
 	Clock::time_point mStart = Clock::now();
 };

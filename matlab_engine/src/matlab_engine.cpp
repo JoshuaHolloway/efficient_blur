@@ -68,7 +68,27 @@ namespace Matlab
 		// Change MATLAB's workspace directory
 		std::string current_path = ExePath();
 		command("cd " + current_path); // Change directory to where .exe is generated
-		command("cd ../../../../matlab");
+		command("cd ../../matlab");
 	}
+	//=====================================================
+	void Matlab::pass_2D_into_matlab(float* data, size_t M, size_t N, std::string name)
+	{
+		auto lin = [](size_t idx, size_t jdx, size_t K) -> size_t { return idx * K + jdx; };
 
+		// Transpose for col-major MATLAB and convert to double
+		double* data_t = new double[M * N];
+		for (size_t i = 0; i != M; ++i)
+			for (size_t j = 0; j != N; ++j)
+				data_t[lin(j, i, M)] = (double)data[lin(i, j, N)];
+
+		// Copy image data into an mxArray inside C++ environment
+		mxArray* mx_Arr = mxCreateDoubleMatrix(M, N, mxREAL);
+		memcpy(mxGetPr(mx_Arr), data_t, M * N * sizeof(double));
+
+		/// C++ -> MATLAB
+		// Put variable into MATLAB workstpace
+		engPutVariable(ep, name.c_str(), mx_Arr);
+
+		delete[] data_t;
+	}
 }
