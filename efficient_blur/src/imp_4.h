@@ -750,20 +750,9 @@ namespace tiled
 		return z;
 	}
 	// - - - - - - - - - - - - - - - - 
-	float* imp_4_general_tile6x6(const cv::Mat& mat)
+	float* imp_4_general_tile6x6(const float* x_f, const size_t N)
 	{
-		// -Step 1: Same as Imp-4 (Tiled) but with 8x8 input (4x4-tile)
-		// -Step 2: Imp-4 with 8x8 input and 6x6 tile
-		// -Step 3: Use dynamic array as input
-		// -Step 4: Scale up to image
-		// -Step 5: Use pixel data as input
-		///		=>Done in this function
-
-		//assert(mat.type() == CV_32FC1);
-		assert(mat.rows == mat.cols);
-
-		// toy image size
-		const size_t img_size = mat.rows;
+		const size_t img_size = N;
 		const size_t img_zp_size = img_size + 2 * P;
 
 		// Zero-pad
@@ -772,15 +761,8 @@ namespace tiled
 			*(x_ + i) = 0;
 		for (size_t n1 = P; n1 != img_zp_size - P; ++n1)
 			for (size_t n2 = P; n2 != img_zp_size - P; ++n2)
-				x_[lin(n1, n2, img_zp_size)] = (float)mat.data[lin(n1 - P, n2 - P, img_size)];
+				x_[lin(n1, n2, img_zp_size)] = x_f[lin(n1 - P, n2 - P, img_size)];
 
-		float* z = conv_4_tile6x6(x_, img_size, img_size);
-
-#ifdef PRINT
-		// Display
-		print("After zero-padding", x_, img_zp_size, img_zp_size);
-		print("\nAfter conv", z, M_, N_);
-#endif
-		return z;
+		return conv_4_tile6x6(x_, img_size, img_size);
 	}
 }

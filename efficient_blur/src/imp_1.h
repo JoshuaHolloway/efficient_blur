@@ -9,8 +9,9 @@ using std::string;
 
 namespace naive
 {
+	// - - - - - - - - - - - - - - - - 
 	constexpr size_t P = 1;		  // Zero-padding on each side
-	constexpr size_t K = 2*P + 1; // Size of kernel in each dim
+	constexpr size_t K = 2 * P + 1; // Size of kernel in each dim
 	// - - - - - - - - - - - - - - - - 
 	inline size_t lin(size_t i, size_t j, size_t cols)
 	{
@@ -65,41 +66,16 @@ namespace naive
 		return y;
 	}
 	// - - - - - - - - - - - - - - - - 
-	cv::Mat imp_4_general(const cv::Mat& x)
+	float* imp_4_general(const float* x_f, const size_t N)
 	{
-		const size_t rows = x.rows;
-		const size_t cols = x.cols;
+		//float* x_f = mat2arr(x_mat);
+		const size_t Q = N + 2 * P; // Size of zero-padded in each dim
 
-		float* x_1D = new float[rows * cols];
-		cv::Mat x_f(rows, cols, CV_32FC1);
-		x.convertTo(x_f, CV_32FC1);
-		for (int i = 0; i < rows; ++i)
-			for (int j = 0; j < cols; ++j)
-				x_1D[lin(i, j, cols)] = x_f.at<float>(i, j);
+		float* x_f_zp = pad(x_f, N, P, Q);
+		float* y_f = conv(x_f_zp, N, K, P, Q);
+		float* y_f_zp = pad(y_f, N, P, Q);
+		float* z_f = conv(y_f_zp, N, K, P, Q);
 
-
-		const size_t N_ = cols;
-		const size_t P_ = K / 2;	    // Zero-padding on each side
-		const size_t Q_ = N_ + 2 * P_; // Size of zero-padded in each dim
-
-		// pad
-		//float* x_1D = mat_2_arr(x);
-		//print("x_arr", x_1D, N, N);
-		float* x_1D_zp = pad(x_1D, N_, P_, Q_);
-		float* y_1D = conv(x_1D_zp, N_, K, P_, Q_);
-		float* y_1D_zp = pad(y_1D, N_, P_, Q_);
-		float* z_1D = conv(y_1D_zp, N_, K, P_, Q_);
-
-		// convert back to mat
-
-		cv::Mat z(rows, cols, CV_8UC1);
-		for (int i = 0; i < rows*cols; ++i)
-			z.data[i] = (unsigned char)z_1D[i];
-
-		cv::imshow("debug_mat", z);
-		cv::waitKey(0);
-
-
-		return z;
+		return z_f;
 	}
 }
