@@ -57,7 +57,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\include;$(SolutionDir)matlab_engine\src;$(MATLABROOT)\extern\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MATLAB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MATLAB;PRINT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\lib</AdditionalLibraryDirectories>
@@ -73,7 +73,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\include;$(SolutionDir)matlab_engine\src;$(MATLABROOT)\extern\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MATLAB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -90,6 +90,7 @@
     <ClInclude Include="src\1D.h" />
     <ClInclude Include="src\2D.h" />
     <ClInclude Include="src\2D_arrays.h" />
+    <ClInclude Include="src\tiled.h" />
     <ClInclude Include="src\Timer.h" />
   </ItemGroup>
   <ItemGroup>

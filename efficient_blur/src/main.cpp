@@ -2,6 +2,7 @@
 #include "Timer.h"
 #include "imp_4.h"
 #include "imp_1.h"
+#include "tiled.h"
 // - - - - - - - - - - - - - - - -
 float* mat2arr(const cv::Mat& mat)
 {
@@ -27,14 +28,23 @@ auto main() -> int
 	assert(M == N);
 	const float* x_f = mat2arr(x_mat);
 
-	/// Imp-1 - TODO: Write to buffer already zero-padded
+	/// Imp-1
                                               // prototype
 	const float* z1 = naive::imp_1_general(x_f, N); // final
 
 	/// Imp-4
-	//tiled::imp_4(); // prototype
+	const size_t input_M = 6, input_N = 6;
+	const size_t kernel_M = 3, kernel_N = 3;
+	const size_t tile_M = 8, tile_N = 6;
+	assert(tile_N >= kernel_N);
+	
+	Tiled::general(input_M, input_N, kernel_M, kernel_N, tile_M, tile_N);
+	tiled::imp_4(); // 4x4 (6x6 zero-padded) with 4x4 tile prototype
+	tiled::imp_4_input8x8_tile8x8_dynamic(); // 8x8 (10x10 zero-padded) with 8x8 tile prototype
 	const float* z4 = tiled::imp_4_general_tile6x6(x_f, N); // final
 	
+	// TODO: Imp-5: 4-tiles with each in a seperate thread
+
 #ifdef MATLAB
 	// Compare result against golden reference
 	Matlab::Matlab matlab;

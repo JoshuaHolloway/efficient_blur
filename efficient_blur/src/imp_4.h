@@ -101,6 +101,17 @@ namespace tiled
 	{
 		// Imp-4: Tiled
 
+		// Input is zero-padded => output is less by 2P
+
+		const size_t output_M = rows - 2*P; // in future generalizations this will be the M,N size passed in as args
+		const size_t output_N = cols - 2*P;
+
+		// Zero padded size
+		const size_t input_M = output_M + 2 * P;
+		const size_t input_N = output_N + 2 * P;
+
+
+
 		auto loop_print = [=](size_t i, size_t j, float val, string name) -> void
 		{cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
 
@@ -108,9 +119,15 @@ namespace tiled
 		float z[4][4] = { 0 };
 
 		int tile_num = 1;
-		for (size_t n1 = 0; n1 < N; n1 += 2)
+
+
+		// overlap of tiles in input
+		const size_t shift = 2; // Size for there to be zero overlap in output partition (floor(k/2) + 1)
+
+
+		for (size_t n1 = 0; n1 < N; n1 += shift)
 		{
-			for (size_t n2 = 0; n2 < N; n2 += 2)
+			for (size_t n2 = 0; n2 < N; n2 += shift)
 			{
 				cout << "===========================\n";
 				cout << "        Tile #"
@@ -529,7 +546,7 @@ namespace tiled
 						y[lin(i, j, buffer_width)] = sum * box_amplitude;
 #ifdef PRINT
 						cout << "\tWrite to Buffer:  ";
-						loop_print(i, j, y[i][j], "y");
+						loop_print(i, j, y[lin(i,j, buffer_width)], "y");
 #endif
 					} // bi
 				} // bj
@@ -548,7 +565,7 @@ namespace tiled
 							int j = bj;
 							sum += y[lin(i, j, buffer_width)];
 #ifdef PRINT
-							loop_print(i, j, y[i][j], "y");
+							loop_print(i, j, y[lin(i,j,tile_width)], "y");
 #endif
 						}
 						int i = n1 + bi;
@@ -559,6 +576,121 @@ namespace tiled
 						cout << "\tWrite to Output:  ";
 						loop_print(i, j, z[lin(i, j, output_width)], "z");
 #endif
+					}
+				}
+			} // n2
+		} // n1
+
+#ifdef PRINT
+		print("z", z, output_height, output_width);
+#endif
+
+		// TODO: Free memory
+		//delete[] y;
+
+		return z;
+	}
+	// - - - - - - - - - - - - - - - -
+	float* conv_4_tile(const float*x_zp, 
+		const size_t M_, const size_t N_, const size_t tile_size)
+	{
+		// Imp-4: General input and General-Tile Size
+		// with dynamic array as input
+
+		auto loop_print = [=](size_t i, size_t j, float val, string name) -> void
+		{cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
+
+		const size_t output_height = M_;
+		const size_t output_width = N_;
+
+		// Zero padded size
+		const size_t input_height = output_height + 2 * P;
+		const size_t input_width = output_width + 2 * P;
+
+		// Input tile-size
+		const size_t tile_height = tile_size;
+		const size_t tile_width = tile_size;
+
+		// Output tile-size - this is not general
+		const size_t output_block_height = tile_height - 2 * P;
+		const size_t output_block_width = tile_width - 2 * P;
+
+		// Intermediate buffer-size
+		const size_t buffer_height = tile_height;
+		const size_t buffer_width = tile_width - 2 * P;
+
+		// Allocate space for buffer and output
+		float* y = new float[buffer_height * buffer_width];
+		float* z = new float[output_height * output_width];
+
+		float box_amplitude = 1 / float(K);
+
+		int tile_num = 1;
+		for (size_t n1 = 0; n1 != output_height; n1 += output_block_height)
+		{
+			for (size_t n2 = 0; n2 != output_width; n2 += output_block_width)
+			{
+#ifdef PRINT
+				cout << "===========================\n";
+				cout << "        Tile #"
+					<< tile_num++ << "\n";
+				cout << "===========================\n";
+#endif
+				// Tile loop:
+				for (size_t bi = 0; bi != buffer_height; ++bi) // tile-row
+				{
+					for (size_t bj = 0; bj != buffer_width; ++bj) // tile-col
+					{
+						// Do 1-D conv here				
+						float sum = 0.f;
+#ifdef PRINT
+						cout << "Read From Input:   ";
+#endif
+						for (size_t k2 = 0; k2 != K; ++k2)
+						{
+							int i = n1 + bi;
+							int j = n2 + k2 + bj;
+							sum += x_zp[lin(i, j, input_width)];
+#ifdef PRINT
+							loop_print(i, j, x_zp[lin(i, j, input_width)], "x");
+#endif
+						}
+						size_t i = bi;
+						size_t j = bj;
+						y[lin(i, j, buffer_width)] = sum * box_amplitude;
+#ifdef PRINT
+						cout << "\tWrite to Buffer:  lin(i,j,tile_width)=" << lin(i, j, tile_width) << "   ";
+						loop_print(i, j, y[lin(i,j,tile_width)], "y");
+						getchar();
+#endif
+					} // bi
+				} // bj
+
+				for (size_t bj = 0; bj != output_block_height; ++bj) // tile-col
+				{
+					for (size_t bi = 0; bi != output_block_width; ++bi) // tile-row
+					{
+#ifdef PRINT
+						cout << "Read from Buffer:  ";
+#endif
+						float sum = 0;
+						for (size_t k1 = 0; k1 != K; k1++)
+						{
+							int i = bi + k1;
+							int j = bj;
+							sum += y[lin(i, j, buffer_width)];
+#ifdef PRINT
+							loop_print(i, j, y[lin(i,j,tile_width)], "y");
+#endif
+						}
+						int i = n1 + bi;
+						int j = n2 + bj;
+						z[lin(i, j, output_width)] = sum * box_amplitude;
+
+#ifdef PRINT
+						cout << "\nWrite to Output:  ";
+						loop_print(i, j, z[lin(i, j, output_width)], "z");
+#endif					getchar();
 					}
 				}
 			} // n2
@@ -754,6 +886,46 @@ namespace tiled
 		// Display
 		print("After zero-padding", x_, img_zp_size, img_zp_size);
 		print("\nAfter conv", z, 16, 16);
+#endif
+		// TODO: Free memory
+		//delete[] x_;
+
+		return z;
+	}
+	// - - - - - - - - - - - - - - - - 
+		// - - - - - - - - - - - - - - - - 
+	float* imp_4_input8x8_tile8x8_dynamic()
+	{
+		// Generalize imp_4:
+		// Change 6x6 to 8x8 tile on 16x16 input
+
+		constexpr size_t tile_size = 8;
+		constexpr size_t img_size = 8;
+		constexpr size_t img_zp_size = img_size + 2 * P;
+
+		float x[img_size][img_size] = {};
+		size_t k(1);
+		for (size_t i = 0; i != img_size; ++i)
+			for (size_t j = 0; j != img_size; ++j)
+				x[i][j] = k++;
+
+		// Zero-pad
+		float* x_ = new float[img_zp_size * img_zp_size];
+		for (int i = 0; i < img_zp_size * img_zp_size; ++i)
+			*(x_ + i) = 0;
+
+		for (size_t n1 = P; n1 != img_zp_size - P; ++n1)
+			for (size_t n2 = P; n2 != img_zp_size - P; ++n2)
+				x_[lin(n1, n2, img_zp_size)] = x[n1 - P][n2 - P];
+
+#ifdef PRINT
+		print("After zero-padding", x_, img_zp_size, img_zp_size);
+#endif
+		
+		float* z = conv_4_tile(x_, img_size, img_size, tile_size);
+
+#ifdef PRINT
+		print("\nAfter conv", z, tile_size, tile_size);
 #endif
 		// TODO: Free memory
 		//delete[] x_;
