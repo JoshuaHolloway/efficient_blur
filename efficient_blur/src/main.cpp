@@ -19,7 +19,7 @@ auto main() -> int
 #endif
 
 	// Tiled
-	const size_t power = 5;
+	const size_t power = 6;
 	const size_t input_M = pow(2,power), input_N = input_M;
 	const size_t kernel_M = 3, kernel_N = kernel_M;
 	
@@ -50,6 +50,7 @@ auto main() -> int
 		matlab.pass_0D_into_matlab(input_M, "M");
 		matlab.pass_0D_into_matlab(input_N, "N");
 		matlab.pass_0D_into_matlab(kernel_N, "K");
+		matlab.pass_0D_into_matlab(tile_N, "T");
 		matlab.pass_2D_into_matlab(z_proto, input_M, input_N, "z_cpp");
 		std::cout << "data has been sent to matlab\n";
 		std::cout << "running test-bench script...\n";
