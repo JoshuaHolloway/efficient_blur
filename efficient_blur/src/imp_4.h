@@ -516,7 +516,7 @@ namespace tiled
 		{
 			for (size_t n2 = 0; n2 != output_width; n2 += output_block_width)
 			{
-#ifdef PRINT
+#ifdef PRINT_
 				cout << "===========================\n";
 				cout << "        Tile #"
 					<< tile_num++ << "\n";
@@ -529,7 +529,7 @@ namespace tiled
 					{
 						// Do 1-D conv here				
 						float sum = 0.f;
-#ifdef PRINT
+#ifdef PRINT_
 						cout << "Read From Input:   ";
 #endif
 						for (size_t k2 = 0; k2 != K; ++k2)
@@ -537,14 +537,14 @@ namespace tiled
 							int i = n1 + bi;
 							int j = n2 + k2 + bj;
 							sum += x_zp[lin(i, j, input_width)];
-#ifdef PRINT
+#ifdef PRINT_
 							loop_print(i, j, x_zp[lin(i, j, input_width)], "x");
 #endif
 						}
 						size_t i = bi;
 						size_t j = bj;
 						y[lin(i, j, buffer_width)] = sum * box_amplitude;
-#ifdef PRINT
+#ifdef PRINT_
 						cout << "\tWrite to Buffer:  ";
 						loop_print(i, j, y[lin(i,j, buffer_width)], "y");
 #endif
@@ -555,7 +555,7 @@ namespace tiled
 				{
 					for (size_t bi = 0; bi != output_block_width; ++bi) // tile-row
 					{
-#ifdef PRINT
+#ifdef PRINT_
 						cout << "Read from Buffer:  ";
 #endif
 						float sum = 0;
@@ -564,7 +564,7 @@ namespace tiled
 							int i = bi + k1;
 							int j = bj;
 							sum += y[lin(i, j, buffer_width)];
-#ifdef PRINT
+#ifdef PRINT_
 							loop_print(i, j, y[lin(i,j,tile_width)], "y");
 #endif
 						}
@@ -572,7 +572,7 @@ namespace tiled
 						int j = n2 + bj;
 						z[lin(i, j, output_width)] = sum * box_amplitude;
 
-#ifdef PRINT
+#ifdef PRINT_
 						cout << "\tWrite to Output:  ";
 						loop_print(i, j, z[lin(i, j, output_width)], "z");
 #endif
@@ -581,7 +581,7 @@ namespace tiled
 			} // n2
 		} // n1
 
-#ifdef PRINT
+#ifdef PRINT_
 		print("z", z, output_height, output_width);
 #endif
 

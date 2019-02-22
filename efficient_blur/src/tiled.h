@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <string>
 #include <iostream>
+#include <iomanip>
 
 namespace Tiled
 {
@@ -66,7 +67,11 @@ namespace Tiled
 		const size_t kernel_size)
 	{
 		auto loop_print = [=](size_t i, size_t j, float val, std::string name) -> void
-		{std::cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
+		{
+			std::cout << std::fixed;
+			std::cout << std::setprecision(2);
+			std::cout << name << "(" << i << "," << j << ") = " << val << "\t"; 
+		};
 
 		const size_t output_height = M_;
 		const size_t output_width = N_;
@@ -105,6 +110,11 @@ namespace Tiled
 		const size_t input_N = input_width;
 		const size_t num_tiles_N = (input_N - tile_N) / 2 + 1;
 
+		const size_t stride = 1;
+		const size_t output_elems_per_tile_M = (buffer_height - kernel_size) / stride + 1;
+		const size_t output_elems_per_tile_N = buffer_width;
+
+
 		for (size_t n1 = 0; n1 < num_tiles_M * shift; n1 += shift)
 		{
 			for (size_t n2 = 0; n2 < num_tiles_N * shift; n2 += shift)
@@ -119,10 +129,9 @@ namespace Tiled
 					tile_M, tile_N,            // Dimensions of tile
 					n1, n2);                   // 2D-tile index
 #endif
-				// Tile loop:
-				for (size_t b1 = 0; b1 < buffer_height; ++b1) // tile-row
+				for (size_t b1 = 0; b1 < buffer_height; ++b1)
 				{
-					for (size_t b2 = 0; b2 < buffer_width; ++b2) // tile-col
+					for (size_t b2 = 0; b2 < buffer_width; ++b2)
 					{
 						// Do 1-D conv here				
 						float sum = 0.f;
@@ -149,33 +158,36 @@ namespace Tiled
 #endif
 					} // b1
 				} // b2
-//				for (size_t b2 = 0; b2 != output_block_height; ++b2) // tile-col
-//				{
-//					for (size_t b1 = 0; b1 != output_block_width; ++b1) // tile-row
-//					{
-//#ifdef PRINT
-//						std::cout << "Read from Buffer:  ";
-//#endif
-//						float sum = 0;
-//						for (size_t k1 = 0; k1 != kernel_size; k1++)
-//						{
-//							int i = b1 + k1;
-//							int j = b2;
-//							sum += y[index(i, j, buffer_width)];
-//#ifdef PRINT
-//							loop_print(i, j, y[index(i, j, tile_width)], "y");
-//#endif
-//						}
-//						int i = n1 + b1;
-//						int j = n2 + b2;
-//						z[index(i, j, output_width)] = sum * box_amplitude;
-//
-//#ifdef PRINT
-//						std::cout << "\nWrite to Output:  ";
-//						loop_print(i, j, z[index(i, j, output_width)], "z");
-//#endif					getchar();
-//					}
-//				}
+
+				for (size_t b2 = 0; b2 < output_elems_per_tile_M; ++b2)
+				{
+					for (size_t b1 = 0; b1 < output_elems_per_tile_N; ++b1)
+					{
+#ifdef PRINT
+						std::cout << "Read from Buffer:  ";
+#endif
+						float sum = 0;
+						for (size_t k1 = 0; k1 < kernel_size; k1++)
+						{
+							int i = b1 + k1;
+							int j = b2;
+							sum += y[index(i, j, buffer_width)];
+#ifdef PRINT
+							loop_print(i, j, y[index(i, j, buffer_width)], "y");
+#endif
+						}
+						int i = n1 + b1;
+						int j = n2 + b2;
+						z[index(i, j, output_width)] = sum * box_amplitude;
+
+#ifdef PRINT
+						std::cout << "\tWrite to Output:  ";
+						loop_print(i, j, z[index(i, j, output_width)], "z");
+						//getchar();
+#endif					
+						std::cout << "\n";
+					}
+				}
 			} // n2
 		} // n1
 

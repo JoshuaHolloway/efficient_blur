@@ -79,7 +79,10 @@ namespace Matlab
 		double* data_t = new double[M * N];
 		for (size_t i = 0; i != M; ++i)
 			for (size_t j = 0; j != N; ++j)
+			{
 				data_t[lin(j, i, M)] = (double)data[lin(i, j, N)];
+			}
+				
 
 		// Copy image data into an mxArray inside C++ environment
 		mxArray* mx_Arr = mxCreateDoubleMatrix(M, N, mxREAL);
@@ -90,5 +93,17 @@ namespace Matlab
 		engPutVariable(ep, name.c_str(), mx_Arr);
 
 		delete[] data_t;
+	}
+	void Matlab::pass_0D_into_matlab(double number, std::string name)
+	{
+		// NOTE: This function truncates floating point numbers to ints
+
+		// Copy data into an mxArray
+		mxArray* mx_Arr = mxCreateDoubleScalar(number);
+		memcpy(mxGetPr(mx_Arr), &number, sizeof(int));
+
+		/// C++ -> MATLAB
+		// Put variable into MATLAB workstpace
+		engPutVariable(ep, name.c_str(), mx_Arr);
 	}
 }
