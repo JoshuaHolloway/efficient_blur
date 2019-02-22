@@ -57,7 +57,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\include;$(SolutionDir)matlab_engine\src;$(MATLABROOT)\extern\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>MATLAB;PRINT;PROTOTYPE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>MATLAB;PROTOTYPE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\lib</AdditionalLibraryDirectories>
@@ -85,6 +85,7 @@
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\helper.h" />
     <ClInclude Include="src\imp_1.h" />
     <ClInclude Include="src\imp_4.h" />
     <ClInclude Include="src\1D.h" />

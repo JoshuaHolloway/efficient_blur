@@ -184,8 +184,8 @@ namespace Tiled
 						std::cout << "\tWrite to Output:  ";
 						loop_print(i, j, z[index(i, j, output_width)], "z");
 						//getchar();
-#endif					
 						std::cout << "\n";
+#endif					
 					}
 				}
 			} // n2
