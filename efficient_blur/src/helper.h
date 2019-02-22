@@ -21,4 +21,20 @@ namespace Helper
 				x_1D[lin(i, j, N)] = mat_f.at<float>(i, j);
 		return x_1D;
 	}
+	// - - - - - - - - - - - - - - - - 
+	inline size_t index(size_t i, size_t j, size_t cols)
+	{
+		return i * cols + j;
+	}
+	// - - - - - - - - - - - - - - - - 
+	float* genterate_test_matrix(
+		size_t M, size_t N)
+	{
+		float* x = new float[N * N];
+		size_t k(1);
+		for (size_t i = 0; i != M; ++i)
+			for (size_t j = 0; j != N; ++j)
+				x[index(i, j, N)] = k++;
+		return x;
+	}
 }

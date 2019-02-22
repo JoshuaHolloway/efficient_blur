@@ -201,7 +201,7 @@ namespace Tiled
 		return z;
 	}
 	// - - - - - - - - - - - - - - - - 
-	float* general(
+	float* general(const float* x,
 		const size_t input_M, const size_t input_N,
 		const size_t kernel_M, const size_t kernel_N, 
 		const size_t tile_M, const size_t tile_N)
@@ -226,19 +226,10 @@ namespace Tiled
 		assert(input_M == input_N);
 		assert(kernel_M == kernel_N);
 
-		// toy image size
+		// Zero-padding parameters
 		const size_t P = kernel_M / 2;
 		const size_t img_size = input_N;
 		const size_t img_zp_size = img_size + 2 * P;
-
-
-		//float x[img_size][img_size] = {};
-		float* x = new float[img_size * img_size];
-		size_t k(1);
-		for (size_t i = 0; i != img_size; ++i)
-			for (size_t j = 0; j != img_size; ++j)
-				x[index(i,j,img_size)] = k++;
-				//x[i][j] = k++;
 
 		// Zero-pad
 		float* x_ = new float[img_zp_size * img_zp_size];
@@ -259,9 +250,7 @@ namespace Tiled
 #ifdef PRINT
 		print_matrix("\nAfter conv", z, tile_N, tile_N);
 #endif
-		// TODO: Free memory
-		//delete[] x_;
-
+		delete[] x_;
 		return z;
 	}
 }

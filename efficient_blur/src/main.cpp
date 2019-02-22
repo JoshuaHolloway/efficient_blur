@@ -33,9 +33,11 @@ auto main() -> int
 	
 #ifdef PROTOTYPE
 	// general tiling prototype
-	const float* z_proto = Tiled::general(input_M, input_N, kernel_M, kernel_N, tile_M, tile_N);
+	const float* test_matrix = Helper::genterate_test_matrix(input_M, input_N);
+	const float* z_proto = Tiled::general(test_matrix, input_M, input_N, kernel_M, kernel_N, tile_M, tile_N);
 	//tiled::imp_4(); // 4x4 (6x6 zero-padded) with 4x4 tile prototype
 	//tiled::imp_4_input8x8_tile8x8_dynamic(); // 8x8 (10x10 zero-padded) with 8x8 tile prototype
+	delete[] test_matrix;
 #else
 	const float* z4 = tiled::imp_4_general_tile6x6(x_f, N);
 #endif
