@@ -60,43 +60,39 @@ namespace Tiled
 		}
 		cout << "\n";
 	}
+	// - - - - - - - - - - - - - - - - 
+	void loop_print(size_t i, size_t j, float val, std::string name)
+	{
+		std::cout << std::fixed;
+		std::cout << std::setprecision(2);
+		std::cout << name << "(" << i << "," << j << ") = " << val << "\t";
+	}
 	// - - - - - - - - - - - - - - - -
 	float* conv_tiled(const float*x_zp,
-		const size_t M_, const size_t N_, 
-		const size_t tile_M, const size_t tile_N,
-		const size_t kernel_size)
+		size_t M, size_t N, 
+		 size_t tile_M, size_t tile_N,
+		size_t kernel_size)
 	{
-		auto loop_print = [=](size_t i, size_t j, float val, std::string name) -> void
-		{
-			std::cout << std::fixed;
-			std::cout << std::setprecision(2);
-			std::cout << name << "(" << i << "," << j << ") = " << val << "\t"; 
-		};
-
-		const size_t output_height = M_;
-		const size_t output_width = N_;
+		size_t out_M = M;
+		size_t out_N = N;
 
 		const size_t P = kernel_size / 2;
 
 		// Zero padded size
-		const size_t input_height = output_height + 2 * P;
-		const size_t input_width = output_width + 2 * P;
+		size_t in_M_zp = out_M + 2 * P;
+		size_t in_N_zp = out_N + 2 * P;
 
-		// Input tile-size
-		const size_t tile_height = tile_M;
-		const size_t tile_width = tile_N;
-
-		// Output tile-size - this is not general
-		const size_t output_block_height = tile_height - 2 * P;
-		const size_t output_block_width = tile_width - 2 * P;
+		// Output tile-size - parition of output (no-overlap)
+		size_t out_tile_M = tile_M - 2 * P;
+		size_t out_tile_N = tile_N - 2 * P;
 
 		// Intermediate buffer-size
-		const size_t buffer_height = tile_height;
-		const size_t buffer_width = tile_width - 2 * P;
+		size_t buffer_M = tile_M;
+		size_t buffer_N = tile_N - 2 * P;
 
 		// Allocate space for buffer and output
-		float* y = new float[buffer_height * buffer_width];
-		float* z = new float[output_height * output_width];
+		float* y = new float[buffer_M * buffer_N];
+		float* z = new float[out_M * out_N];
 
 		float box_amplitude = 1 / float(kernel_size);
 
@@ -104,15 +100,15 @@ namespace Tiled
 
 		int tile_num = 1;
 
-		const size_t input_M = input_height;
+		const size_t input_M = in_M_zp;
 		const size_t num_tiles_M = (input_M - tile_M) / 2 + 1;
 
-		const size_t input_N = input_width;
+		const size_t input_N = in_N_zp;
 		const size_t num_tiles_N = (input_N - tile_N) / 2 + 1;
 
 		const size_t stride = 1;
-		const size_t output_elems_per_tile_M = (buffer_height - kernel_size) / stride + 1;
-		const size_t output_elems_per_tile_N = buffer_width;
+		const size_t output_elems_per_tile_M = (buffer_M - kernel_size) / stride + 1;
+		const size_t output_elems_per_tile_N = buffer_N;
 
 
 		for (size_t n1 = 0; n1 < num_tiles_M * shift; n1 += shift)
@@ -125,13 +121,13 @@ namespace Tiled
 					<< tile_num++ << "\n";
 				std::cout << "===========================\n";
 				print_tile("tile:", x_zp,
-					input_height, input_width, // Dimensions of matrix
+					in_M_zp, in_N_zp, // Dimensions of matrix
 					tile_M, tile_N,            // Dimensions of tile
 					n1, n2);                   // 2D-tile index
 #endif
-				for (size_t b1 = 0; b1 < buffer_height; ++b1)
+				for (size_t b1 = 0; b1 < buffer_M; ++b1)
 				{
-					for (size_t b2 = 0; b2 < buffer_width; ++b2)
+					for (size_t b2 = 0; b2 < buffer_N; ++b2)
 					{
 						// Do 1-D conv here				
 						float sum = 0.f;
@@ -142,17 +138,17 @@ namespace Tiled
 						{
 							int i = n1 + b1;
 							int j = n2 + k2 + b2;
-							sum += x_zp[index(i, j, input_width)];
+							sum += x_zp[index(i, j, in_N_zp)];
 #ifdef PRINT
-							loop_print(i, j, x_zp[index(i, j, input_width)], "x");
+							loop_print(i, j, x_zp[index(i, j, in_N_zp)], "x");
 #endif
 						}
 						size_t i = b1;
 						size_t j = b2;
-						y[index(i, j, buffer_width)] = sum * box_amplitude;
+						y[index(i, j, buffer_N)] = sum * box_amplitude;
 #ifdef PRINT
 						std::cout << "\tWrite to Buffer:  ";
-						loop_print(i, j, y[index(i, j, buffer_width)], "y");
+						loop_print(i, j, y[index(i, j, buffer_N)], "y");
 						//getchar();
 						std::cout << "\n";
 #endif
@@ -171,18 +167,18 @@ namespace Tiled
 						{
 							int i = b1 + k1;
 							int j = b2;
-							sum += y[index(i, j, buffer_width)];
+							sum += y[index(i, j, buffer_N)];
 #ifdef PRINT
-							loop_print(i, j, y[index(i, j, buffer_width)], "y");
+							loop_print(i, j, y[index(i, j, buffer_N)], "y");
 #endif
 						}
 						int i = n1 + b1;
 						int j = n2 + b2;
-						z[index(i, j, output_width)] = sum * box_amplitude;
+						z[index(i, j, out_N)] = sum * box_amplitude;
 
 #ifdef PRINT
 						std::cout << "\tWrite to Output:  ";
-						loop_print(i, j, z[index(i, j, output_width)], "z");
+						loop_print(i, j, z[index(i, j, out_N)], "z");
 						//getchar();
 						std::cout << "\n";
 #endif					
@@ -192,7 +188,7 @@ namespace Tiled
 		} // n1
 
 #ifdef PRINT
-		print_matrix("z", z, output_height, output_width);
+		print_matrix("z", z, out_M, out_N);
 #endif
 
 		delete[] y;
