@@ -21,12 +21,12 @@ auto main() -> int
 #endif
 
 	// Tiled
-	const size_t power = 8;
+	const size_t power = 7;
 	const size_t input_M = pow(2,power), input_N = input_M;
 	const size_t kernel_M = 3, kernel_N = kernel_M;
 	
 	
-	const size_t tile_M = 8, tile_N = tile_M;
+	const size_t tile_M = 4, tile_N = tile_M;
 	assert(tile_M == tile_N); // TODO: Change
 
 	assert(input_M == input_N); // TODO: Change
@@ -68,10 +68,11 @@ auto main() -> int
 		int32 us_per_frame = (1e6*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
 		int32 ns_per_frame = (1e9*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
 
-		//char buffer[256]; // 256Bytes
-		//wsprintf(buffer, "ms/frame: %", ms_per_frame);
-		//OutputDebugStringA("");
-		std::cout << "ms/frame = " << ms_per_frame << "\n";
+		char buffer[256]; // 256Bytes
+		wsprintf(buffer, "ms/frame: %dms\n", ms_per_frame);
+		OutputDebugStringA(buffer);
+		std::cout << "ms/frame = " << ms_per_frame << "\t";
+		std::cout << "Frames Per Second = " << (1/((double)ms_per_frame)*1e3)<< "\n";
 
 
 		delete[] z_proto;

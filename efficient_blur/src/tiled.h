@@ -195,9 +195,7 @@ namespace Tiled
 		print_matrix("z", z, output_height, output_width);
 #endif
 
-		// TODO: Free memory
-		//delete[] y;
-
+		delete[] y;
 		return z;
 	}
 	// - - - - - - - - - - - - - - - - 
