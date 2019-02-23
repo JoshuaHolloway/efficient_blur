@@ -79,10 +79,7 @@ namespace Matlab
 		double* data_t = new double[M * N];
 		for (size_t i = 0; i != M; ++i)
 			for (size_t j = 0; j != N; ++j)
-			{
-				data_t[lin(j, i, M)] = (double)data[lin(i, j, N)];
-			}
-				
+				data_t[lin(j, i, M)] = (double)data[lin(i, j, N)];			
 
 		// Copy image data into an mxArray inside C++ environment
 		mxArray* mx_Arr = mxCreateDoubleMatrix(M, N, mxREAL);

@@ -5,6 +5,8 @@
 #include "imp_1.h"
 #include "tiled.h"
 // - - - - - - - - - - - - - - - - 
+typedef __int32 int32;
+// - - - - - - - - - - - - - - - - 
 auto main() -> int
 {
 	/// Imp-1
@@ -19,12 +21,12 @@ auto main() -> int
 #endif
 
 	// Tiled
-	const size_t power = 6;
+	const size_t power = 8;
 	const size_t input_M = pow(2,power), input_N = input_M;
 	const size_t kernel_M = 3, kernel_N = kernel_M;
 	
 	
-	const size_t tile_M = 8, tile_N = 8;
+	const size_t tile_M = 8, tile_N = tile_M;
 	assert(tile_M == tile_N); // TODO: Change
 
 	assert(input_M == input_N); // TODO: Change
@@ -32,18 +34,54 @@ auto main() -> int
 	assert(tile_N <= input_N  && tile_M <= input_M);   // Tile must be at least the size of the non-zero-padded image
 	
 #ifdef PROTOTYPE
+
 	// general tiling prototype
 	const float* test_matrix = Helper::genterate_test_matrix(input_M, input_N);
-	const float* z_proto = Tiled::general(test_matrix, input_M, input_N, kernel_M, kernel_N, tile_M, tile_N);
-	//tiled::imp_4(); // 4x4 (6x6 zero-padded) with 4x4 tile prototype
-	//tiled::imp_4_input8x8_tile8x8_dynamic(); // 8x8 (10x10 zero-padded) with 8x8 tile prototype
+
+	LARGE_INTEGER PerfCountFrequencyResult;
+	QueryPerformanceFrequency(&PerfCountFrequencyResult);
+	//BOOL WINAPI QueryPerformanceFrequency(
+	//	_Out_ LARGE_INTEGER *lpFrequency
+	//);
+	const int64 PerfCountFrequency = PerfCountFrequencyResult.QuadPart;
+
+	while (true)
+	{
+		//https://docs.microsoft.com/en-us/windows/desktop/SysInfo/acquiring-high-resolution-time-stamps
+		LARGE_INTEGER BeginCounter;
+		//typedef struct _LARGE_INTEGER {
+		//	LONGLONG QuadPart;
+		//} LARGE_INTEGER;
+
+		QueryPerformanceCounter(&BeginCounter);
+		//BOOL WINAPI QueryPerformanceCounter(
+		//	_Out_ LARGE_INTEGER *lpPerformanceCount
+		//);
+
+		const float* z_proto = Tiled::general(test_matrix, input_M, input_N, kernel_M, kernel_N, tile_M, tile_N);
+
+		LARGE_INTEGER EndCounter;
+		QueryPerformanceCounter(&EndCounter);
+
+		int32 CounterElapsed = EndCounter.QuadPart - BeginCounter.QuadPart;
+		int32 ms_per_frame = (1e3*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
+		int32 us_per_frame = (1e6*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
+		int32 ns_per_frame = (1e9*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
+
+		//char buffer[256]; // 256Bytes
+		//wsprintf(buffer, "ms/frame: %", ms_per_frame);
+		//OutputDebugStringA("");
+		std::cout << "ms/frame = " << ms_per_frame << "\n";
+
+
+		delete[] z_proto;
+	}
 	delete[] test_matrix;
 #else
 	const float* z4 = tiled::imp_4_general_tile6x6(x_f, N);
 #endif
 
 	// TODO: Imp-5: 4-tiles with each in a seperate thread
-
 #ifdef MATLAB
 	// Compare result against golden reference
 	Matlab::Matlab matlab;
