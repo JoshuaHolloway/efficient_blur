@@ -3,7 +3,7 @@
 namespace FastBlur
 {
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	size_t index(size_t i, size_t j, size_t N)
+	inline size_t index(size_t i, size_t j, size_t N)
 	{ return i * N + j; };
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	void read_frame_method_1(uint8_t* data, cv::Mat& mat, int stride)
@@ -37,7 +37,7 @@ namespace FastBlur
 		}
 	}
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-	void fast_blur(const Image &in, Image &blurred,
+	void fast_blur(const Image &in, Image &out,
 		size_t tile_M, size_t tile_N,
 		size_t kernel_size)
 	{
@@ -62,53 +62,47 @@ namespace FastBlur
 		size_t tile_num = 1;   // Input Tile
 		size_t buffer_num = 1; // Intermdiate Buffer
 		size_t overlap = 2;
+
+		const size_t stride = 1;
+		const size_t output_elems_per_tile_M = (buffer_M - kernel_size) / stride + 1;
+		const size_t output_elems_per_tile_N = buffer_N;
+
+
 		for (int y_tile = 0; y_tile < in.height() - overlap; y_tile += Y_Tile - overlap)
 		{
 			for (int x_tile = 0; x_tile < in.width() - overlap; x_tile += X_Tile - overlap)
 			{
-				int kernel_size = 3;
-				int n1 = y_tile;
-				int n2 = x_tile;
-				
 				// Write to buffer
 				for (size_t y = 0; y < buffer_M; y++)
 				{
 					float * row_ptr = in.data + (y_tile + y) * in.stride();
 					for (size_t x = 0; x < buffer_N; x++)
 					{
-						// Do 1-D conv
+						int j = x_tile + x;
+
+						// Do 1-D conv [Unrolled Loop]
 						float sum = 0.f;
-						for (size_t k2 = 0; k2 < kernel_size; ++k2)
-						{
-							int j = n2 + x + k2;
-							auto temp = *(row_ptr + j);
-							sum += temp;
-						}
+						sum += *(row_ptr + j++);
+						sum += *(row_ptr + j++);
+						sum += *(row_ptr + j++);
 						buffer[index(y, x, buffer_N)] = sum * box_amplitude;
 					}
 				}
 
-				const size_t stride = 1;
-				const size_t output_elems_per_tile_M = (buffer_M - kernel_size) / stride + 1;
-				const size_t output_elems_per_tile_N = buffer_N;
-
 				// Read from buffer
-				for (size_t x = 0; x < output_elems_per_tile_N; x++)
+				for (size_t y = 0; y < output_elems_per_tile_M; y++)
 				{
-					for (size_t y = 0; y < output_elems_per_tile_M; y++)
+					float * row_ptr_ = out.data + (y_tile + y) * out.stride();
+					for (size_t x = 0; x < output_elems_per_tile_N; x++)
 					{
-
-						// Do 1-D conv
+						// Do 1-D conv [Unrolled Loop]
 						float sum = 0.f;
-						for (size_t k1 = 0; k1 < kernel_size; ++k1)
-						{
-							int i = y + k1;
-							int j = x;
-							sum += buffer[index(i, j, buffer_N)];
-						}
-						int i = y_tile + y;
+						int i = y;
+						sum += *(buffer + index(i++, x, buffer_N));
+						sum += *(buffer + index(i++, x, buffer_N));
+						sum += *(buffer + index(i++, x, buffer_N));
 						int j = x_tile + x;
-						blurred.data[index(i, j, out_N)] = sum * box_amplitude;
+						*(row_ptr_ + j) = sum * box_amplitude;
 					}
 				}
 			}

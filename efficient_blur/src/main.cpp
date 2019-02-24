@@ -81,13 +81,16 @@ auto main() -> int
 		for (int j = 0; j < N; j++)
 			x[i * N + j] = i * N + j + 1;
 
-	Image image(x, M, N, 3);
+	size_t kernel_size = 3;
+	Image image(x, M, N, kernel_size);
 	image.print();
 
 	Image blurred(M, N);  // 
 	blurred.print(); 
 
-	FastBlur::fast_blur(image, blurred, 4,4,3);
+	size_t tile_M = 4, tile_N = tile_M;
+	assert(tile_N < N);
+	FastBlur::fast_blur(image, blurred, tile_M,tile_N,kernel_size);
 	blurred.print();
 
 	blurred.view();
@@ -105,6 +108,7 @@ auto main() -> int
 	const float* z1 = naive::imp_1_general(x_f, N); 
 #endif
 
+#ifdef TEST
 	size_t exp = 9;
 	size_t input_M = pow(2, exp), input_N = input_M;
 	size_t kernel_M = 3, kernel_N = kernel_M;
@@ -113,7 +117,8 @@ auto main() -> int
 	assert(input_M == input_N); // TODO: Rect
 	assert(tile_N >= kernel_N);
 	assert(tile_N <= input_N+1);
-	
+
+
 #ifdef PROTOTYPE
 	// general tiling prototype
 	const float* test_matrix = Helper::genterate_test_matrix(input_M, input_N);
@@ -188,6 +193,9 @@ auto main() -> int
 		delete[] x_f, z1, z4;
 	#endif
 #endif
+
+
+#endif // TEST
 
 		getchar();
 	return 0;
