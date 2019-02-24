@@ -52,57 +52,53 @@ namespace FastBlur
 
 		// Intermediate buffer-size
 		size_t buffer_M = tile_M;
-		size_t buffer_N = tile_N - 2 * (kernel_size/2);
+		size_t buffer_N = tile_N - 2 * (kernel_size / 2);
 
 		// Allocate space for buffer and output
 		float* buffer = new float[buffer_M * buffer_N];
-		//float* z = new float[out_M * out_N];
-
 		float box_amplitude = 1 / float(kernel_size);
 
 		// Work inside tile
-		for (int y_tile = 0; y_tile < in.height(); y_tile += Y_Tile)
+		size_t tile_num = 1;   // Input Tile
+		size_t buffer_num = 1; // Intermdiate Buffer
+		size_t overlap = 2;
+		for (int y_tile = 0; y_tile < in.height() - overlap; y_tile += Y_Tile - overlap)
 		{
-			for (int x_tile = 0; x_tile < in.width(); x_tile += X_Tile)
+			for (int x_tile = 0; x_tile < in.width() - overlap; x_tile += X_Tile - overlap)
 			{
 				int kernel_size = 3;
 				int n1 = y_tile;
 				int n2 = x_tile;
-
+				
 				// Write to buffer
 				for (size_t y = 0; y < buffer_M; y++)
 				{
-					float * row_ptr = in.data + y * in.stride();
+					float * row_ptr = in.data + (y_tile + y) * in.stride();
 					for (size_t x = 0; x < buffer_N; x++)
 					{
-						// Do 1-D conv here
+						// Do 1-D conv
 						float sum = 0.f;
 						for (size_t k2 = 0; k2 < kernel_size; ++k2)
 						{
-							int i = n1 + y;
 							int j = n2 + x + k2;
-							//sum += x_zp[index(i, j, in_N_zp)];
-							sum += in.data[index(i,j,in.stride())];	
+							auto temp = *(row_ptr + j);
+							sum += temp;
 						}
-						size_t i = y;
-						size_t j = x;
-						buffer[index(i, j, buffer_N)] = sum * box_amplitude;
+						buffer[index(y, x, buffer_N)] = sum * box_amplitude;
 					}
 				}
-
-
-
 
 				const size_t stride = 1;
 				const size_t output_elems_per_tile_M = (buffer_M - kernel_size) / stride + 1;
 				const size_t output_elems_per_tile_N = buffer_N;
 
 				// Read from buffer
-				for (size_t y = 0; y < output_elems_per_tile_M; y++)
+				for (size_t x = 0; x < output_elems_per_tile_N; x++)
 				{
-					for (size_t x = 0; x < output_elems_per_tile_N; x++)
+					for (size_t y = 0; y < output_elems_per_tile_M; y++)
 					{
-						// Do 1-D conv here
+
+						// Do 1-D conv
 						float sum = 0.f;
 						for (size_t k1 = 0; k1 < kernel_size; ++k1)
 						{
@@ -112,8 +108,6 @@ namespace FastBlur
 						}
 						int i = y_tile + y;
 						int j = x_tile + x;
-
-						// NOTE: blurred should not be zero-padded
 						blurred.data[index(i, j, out_N)] = sum * box_amplitude;
 					}
 				}
@@ -203,7 +197,7 @@ namespace FastBlur
 				// Write to buffer
 				for (size_t y = 0; y < buffer_M; y++)
 				{
-					float * row_ptr = in.data + y * in.stride();
+					float * row_ptr = in.data + (y_tile +y) * in.stride();
 					for (size_t x = 0; x < buffer_N; x++)
 					{
 						std::cout << "Read From Input:   ";
