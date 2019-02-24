@@ -82,9 +82,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Image.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\fast_blur.h" />
+    <ClInclude Include="src\Image.h" />
     <ClInclude Include="src\helper.h" />
     <ClInclude Include="src\imp_1.h" />
     <ClInclude Include="src\imp_4.h" />

@@ -2,85 +2,95 @@
 #include "helper.h"
 #include "Timer.h"
 #include "tiled.h"
+#include "Image.h"
+#include "fast_blur.h"
 // - - - - - - - - - - - - - - - - 
 typedef __int32 int32;
 // - - - - - - - - - - - - - - - -
-class Image
-{
-public:
-	int height() const { return M; }
-	int width() const { return N; }
-	
-public:
-	int M{ 0 };
-	int N{ 0 };
-	uint16_t *data;
-};
+//int at(int i, int j, int N) { return i * N + j; }
 // - - - - - - - - - - - - - - - -
-int at(int i, int j, int N) { return i * N + j; }
-// - - - - - - - - - - - - - - - -
-void fast_blur(const Image &in, Image &blurred, int stride)
-{
-	// 2048 x 3072 (6-megapixels)
-
-	// 2048 x 1536	= 264dpi	Apple iPad ("new" 2012)
-	// 3072 = 1536*x
-
-	__m128i one_third = _mm_set1_epi16(21846); 
-	// (21,846 * 3) = 65,538 = 256^2 + 2
-
-	const int N = stride;
-
-#pragma omp parallel for
-	for (int yTile = 0; yTile < in.height(); yTile += 32)
-	{
-		__m128i a, b, c, sum, avg;
-		
-		// Number of vectors 
-		constexpr auto num_vecs = (256 / 8)*(32 + 2);
-
-		// array of vectors
-		__m128i tmp[num_vecs];
-
-		// 
-		for (int xTile = 0; xTile < in.width(); xTile += 256)
-		{
-			__m128i *tmpPtr = tmp;
-			for (int y = -1; y < 32 + 1; y++)
-			{
-				const uint16_t *inPtr = &(in.data[at(xTile, yTile + y, N)]);
-
-				for (int x = 0; x < 256; x += 8)
-				{
-					a = _mm_loadu_si128((__m128i*)(inPtr - 1));
-					b = _mm_loadu_si128((__m128i*)(inPtr + 1));
-					c = _mm_load_si128((__m128i*)(inPtr));
-					sum = _mm_add_epi16(_mm_add_epi16(a,b), c);
-					avg = _mm_mulhi_epi16(sum, one_third);
-					_mm_store_si128(tmpPtr++, avg);
-					inPtr += 8;
-				}
-			}
-			tmpPtr = tmp;
-			for (int y = 0; y < 32; y++)
-			{
-				__m128i *outPtr = (__m128i *)(&blurred.data[at(xTile, yTile + y, N)]);
-				for (int x = 0; x < 256; x += 8)
-				{
-					a = _mm_load_si128(tmpPtr + (2 * 256) / 8);
-					b = _mm_load_si128(tmpPtr + 256 / 8);
-					c = _mm_load_si128(tmpPtr++);
-					sum = _mm_add_epi16(_mm_add_epi16(a, b), c);
-					avg = _mm_mulhi_epi16(sum, one_third);
-					_mm_store_si128(outPtr++, avg);
-				}
-			}
-		}
-	}
-}
+//void fast_blur(const Image &in, Image &blurred, int stride)
+//{
+//	// 2048 x 3072 (6-megapixels)
+//
+//	// 2048 x 1536	= 264dpi	Apple iPad ("new" 2012)
+//	// 3072 = 1536*x
+//
+//	__m128i one_third = _mm_set1_epi16(21846); 
+//	// (21,846 * 3) = 65,538 = 256^2 + 2
+//
+//	const int N = stride;
+//
+//#pragma omp parallel for
+//	for (int yTile = 0; yTile < in.height(); yTile += 32)
+//	{
+//		__m128i a, b, c, sum, avg;
+//		
+//		// Number of vectors 
+//		constexpr auto num_vecs = (256 / 8)*(32 + 2);
+//
+//		// array of vectors
+//		__m128i tmp[num_vecs];
+//
+//		// 
+//		for (int xTile = 0; xTile < in.width(); xTile += 256)
+//		{
+//			__m128i *tmpPtr = tmp;
+//			for (int y = -1; y < 32 + 1; y++)
+//			{
+//				const uint16_t *inPtr = &(in.data[at(xTile, yTile + y, N)]);
+//
+//				for (int x = 0; x < 256; x += 8)
+//				{
+//					a = _mm_loadu_si128((__m128i*)(inPtr - 1));
+//					b = _mm_loadu_si128((__m128i*)(inPtr + 1));
+//					c = _mm_load_si128((__m128i*)(inPtr));
+//					sum = _mm_add_epi16(_mm_add_epi16(a,b), c);
+//					avg = _mm_mulhi_epi16(sum, one_third);
+//					_mm_store_si128(tmpPtr++, avg);
+//					inPtr += 8;
+//				}
+//			}
+//			tmpPtr = tmp;
+//			for (int y = 0; y < 32; y++)
+//			{
+//				__m128i *outPtr = (__m128i *)(&blurred.data[at(xTile, yTile + y, N)]);
+//				for (int x = 0; x < 256; x += 8)
+//				{
+//					a = _mm_load_si128(tmpPtr + (2 * 256) / 8);
+//					b = _mm_load_si128(tmpPtr + 256 / 8);
+//					c = _mm_load_si128(tmpPtr++);
+//					sum = _mm_add_epi16(_mm_add_epi16(a, b), c);
+//					avg = _mm_mulhi_epi16(sum, one_third);
+//					_mm_store_si128(outPtr++, avg);
+//				}
+//			}
+//		}
+//	}
+//}
 // - - - - - - - - - - - - - - - - 
 auto main() -> int
 {
+	cv::Mat x_mat = cv::imread("lena_512.png", CV_LOAD_IMAGE_GRAYSCALE);
+	//const size_t M = x_mat.rows, N = x_mat.cols;
+	//Image image(x_mat, 3); // Create Image object from image data in cv::Mat object
+	constexpr size_t M = 4, N = 4;
+	float x[M * N] = { 1,  2,  3, 4, 5,  6,  7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };
+
+	Image image(x, M, N, 3);
+	image.print();
+
+	Image blurred(M, N);  // 
+	blurred.print();
+
+	FastBlur::fast_blur_proto(image, blurred, 4,4,3);
+	blurred.print();
+
+	blurred.view();
+
+
+
+
 	/// Imp-1
 #ifdef PROTOTYPE
     // prototype
@@ -134,10 +144,7 @@ auto main() -> int
 		int64 fps = (1 / ((double)ms_per_frame)*1e3);
 
 		int64 CyclesElapsed = EndCycleCount - BeginCycleCount;
-		
-		char buffer[256]; // 256Bytes
-		wsprintf(buffer, "ms/frame: %dms\n", ms_per_frame);
-		OutputDebugStringA(buffer);
+
 		using std::cout;
 		cout << std::fixed << std::setprecision(2);
 		cout << "ms/frame = " << ms_per_frame << "\t";
