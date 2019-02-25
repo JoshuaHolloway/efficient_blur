@@ -83,17 +83,17 @@ auto main() -> int
 
 	size_t kernel_size = 3;
 	Image image(x, M, N, kernel_size);
-	image.print();
+	image.print("x");
 
 	Image blurred(M, N);  // 
-	blurred.print(); 
+	//blurred.print(); 
 
-	size_t tile_M = 4, tile_N = tile_M;
-	assert(tile_N < N);
-	FastBlur::fast_blur(image, blurred, tile_M,tile_N,kernel_size);
-	blurred.print();
-
-	blurred.view();
+	size_t tile_M = 3, tile_N = tile_M;
+	assert(tile_M >= kernel_size); // Kernel must fit inside tile
+	assert(tile_N <= N);
+	FastBlur::fast_blur_proto(image, blurred, tile_M,tile_N,kernel_size);
+	blurred.print("z");
+	//blurred.view();
 
 
 
@@ -107,7 +107,6 @@ auto main() -> int
 	const float* x_f = Helper::mat2arr(x_mat);
 	const float* z1 = naive::imp_1_general(x_f, N); 
 #endif
-
 #ifdef TEST
 	size_t exp = 9;
 	size_t input_M = pow(2, exp), input_N = input_M;
@@ -170,22 +169,25 @@ auto main() -> int
 	const float* z4 = tiled::imp_4_general_tile6x6(x_f, N);
 #endif
 
+#endif // TEST
+
+
 	// TODO: Imp-5: 4-tiles with each in a seperate thread
 #ifdef MATLAB
 	// Compare result against golden reference
 	Matlab::Matlab matlab;
 	#ifdef PROTOTYPE
 		std::cout << "Sending data to matlab\n";
-		matlab.pass_0D_into_matlab(input_M, "M");
-		matlab.pass_0D_into_matlab(input_N, "N");
-		matlab.pass_0D_into_matlab(kernel_N, "K");
+		matlab.pass_0D_into_matlab(M, "M");
+		matlab.pass_0D_into_matlab(N, "N");
+		matlab.pass_0D_into_matlab(kernel_size, "K");
 		matlab.pass_0D_into_matlab(tile_N, "T");
-		matlab.pass_2D_into_matlab(z_proto, input_M, input_N, "z_cpp");
+		matlab.pass_2D_into_matlab(blurred.data, M, N, "z_cpp");
 		std::cout << "data has been sent to matlab\n";
 		std::cout << "running test-bench script...\n";
 		matlab.command("box_blur_prototype");
 		std::cout << "running test-bench script has been executed\n";
-		delete[] z_proto;
+		//delete[] z_proto;
 	#else
 		matlab.pass_2D_into_matlab(z1, M, N, "z1_cpp");
 		matlab.pass_2D_into_matlab(z4, M, N, "z4_cpp");
@@ -195,7 +197,7 @@ auto main() -> int
 #endif
 
 
-#endif // TEST
+
 
 		getchar();
 	return 0;

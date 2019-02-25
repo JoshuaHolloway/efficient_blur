@@ -1,6 +1,7 @@
 #pragma once
 #include <windows.h>
 #include <iostream>
+#include <string>
 #include "opencv2/core/core.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgcodecs/imgcodecs.hpp"
@@ -21,7 +22,7 @@ public:
 
 	void view();
 
-	void print();
+	void print(std::string);
 
 private:
 	size_t M{};

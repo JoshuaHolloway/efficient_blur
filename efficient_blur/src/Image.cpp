@@ -1,6 +1,5 @@
 #include "Image.h"
 
-
 Image::Image(size_t M_, size_t N_)
 	: M(M_), N(N_), // zero-padded dimensions
 	pitch(N),
@@ -77,7 +76,7 @@ void Image::view()
 	cv::waitKey(0);
 }
 
-void Image::print()
+void Image::print(std::string s)
 {
 	using std::cout;
 	auto loop_print = [=](size_t i, size_t j, float val, std::string name) -> void
@@ -91,7 +90,7 @@ void Image::print()
 		for (size_t j = 0; j < N; ++j)
 		{
 			auto temp = data[index(i, j, pitch)];
-			loop_print(i, j, temp, "x");
+			loop_print(i, j, temp, s.c_str());
 		}
 		cout << std::endl;
 	}

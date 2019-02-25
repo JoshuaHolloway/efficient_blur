@@ -109,10 +109,35 @@ namespace FastBlur
 		}
 	}
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	void print(const float* data, 
+		size_t M, size_t N,
+		std::string str)
+	{
+		using std::cout;
+		auto loop_print = [=](size_t i, size_t j, float val, std::string name) -> void
+		{cout << name << "(" << i << "," << j << ") = " << val << "\t"; };
+
+		auto index = [](size_t i, size_t j, size_t N) -> int
+		{ return i * N + j; };
+
+		for (size_t i = 0; i < M; ++i)
+		{
+			for (size_t j = 0; j < N; ++j)
+			{
+				auto temp = data[index(i, j, N)];
+				loop_print(i, j, temp, str.c_str());
+			}
+			cout << std::endl;
+		}
+		cout << "\n";
+	}
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	void fast_blur_proto(const Image &in, Image &blurred,
 		size_t tile_M, size_t tile_N,
 		size_t kernel_size)
 	{
+		// prototype for fast_blur() with printing values and no pointer arithmetic
+
 		// Input image is zero padded
 		size_t P = kernel_size / 2;
 		size_t out_M = in.height() - 2 * P;
@@ -144,8 +169,6 @@ namespace FastBlur
 				cout << name << "(" << i << "," << j << ") = " << val << "\t"; 
 			};
 
-			cout << str.c_str() << "\n";
-
 			for (size_t i = tile_m; i < tile_m + tile_M; ++i)
 			{
 				cout << i << ": ";
@@ -153,7 +176,7 @@ namespace FastBlur
 				{
 					auto temp = x[index(i, j, cols)];
 					//cout << temp << '\t';
-					loop_print(i, j, temp, "x");
+					loop_print(i, j, temp, str.c_str());
 				}
 				cout << std::endl;
 			}
@@ -172,7 +195,7 @@ namespace FastBlur
 				std::cout << "        Tile #"
 					<< tile_num++ << "\n";
 				std::cout << "===========================\n";
-				print_tile("tile:", in.data,
+				print_tile("x:", in.data,
 					in.height(), in.width(), // Dimensions of matrix
 					tile_M, tile_N,            // Dimensions of tile
 					y_tile, x_tile);                   // 2D-tile index
@@ -221,10 +244,7 @@ namespace FastBlur
 				std::cout << "        Buffer #"
 					<< buffer_num++ << "\n";
 				std::cout << "===========================\n";
-				print_tile("tile:", buffer,
-					buffer_M, buffer_N, // Dimensions of matrix
-					buffer_M, buffer_N, // Dimensions of tile
-					y_tile, x_tile);    // 2D-tile index
+				print(buffer, buffer_M, buffer_N, "y");
 
 				const size_t stride = 1;
 				const size_t output_elems_per_tile_M = (buffer_M - kernel_size) / stride + 1;
@@ -261,6 +281,81 @@ namespace FastBlur
 				}
 			}
 		}
+		std::cout << "\nDone with Conv\n";
 	}
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+		// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	void fast_blur_simd(const Image &in, Image &out,
+		size_t tile_M, size_t tile_N,
+		size_t kernel_size)
+	{
+		// modified fast_blur_simd() to perform each inner loop step in simd registers
+
+		// Input image is zero padded
+		size_t P = kernel_size / 2;
+		size_t out_M = in.height() - 2 * P;
+		size_t out_N = in.width() - 2 * P;
+
+		// Tiles of size YTile x XTile
+		size_t Y_Tile = tile_M;
+		size_t X_Tile = tile_N;
+
+		// Intermediate buffer-size
+		size_t buffer_M = tile_M;
+		size_t buffer_N = tile_N - 2 * (kernel_size / 2);
+
+		// Allocate space for buffer and output
+		float* buffer = new float[buffer_M * buffer_N];
+		float box_amplitude = 1 / float(kernel_size);
+
+		// Work inside tile
+		size_t tile_num = 1;   // Input Tile
+		size_t buffer_num = 1; // Intermdiate Buffer
+		size_t overlap = 2;
+
+		const size_t stride = 1;
+		const size_t output_elems_per_tile_M = (buffer_M - kernel_size) / stride + 1;
+		const size_t output_elems_per_tile_N = buffer_N;
+
+
+		for (int y_tile = 0; y_tile < in.height() - overlap; y_tile += Y_Tile - overlap)
+		{
+			for (int x_tile = 0; x_tile < in.width() - overlap; x_tile += X_Tile - overlap)
+			{
+				// Write to buffer
+				for (size_t y = 0; y < buffer_M; y++)
+				{
+					float * row_ptr = in.data + (y_tile + y) * in.stride();
+					for (size_t x = 0; x < buffer_N; x++)
+					{
+						int j = x_tile + x;
+
+						// Do 1-D conv [Unrolled Loop]
+						float sum = 0.f;
+						sum += *(row_ptr + j++);
+						sum += *(row_ptr + j++);
+						sum += *(row_ptr + j++);
+						buffer[index(y, x, buffer_N)] = sum * box_amplitude;
+					}
+				}
+
+				// Read from buffer
+				for (size_t y = 0; y < output_elems_per_tile_M; y++)
+				{
+					float * row_ptr_ = out.data + (y_tile + y) * out.stride();
+					for (size_t x = 0; x < output_elems_per_tile_N; x++)
+					{
+						// Do 1-D conv [Unrolled Loop]
+						float sum = 0.f;
+						int i = y;
+						sum += *(buffer + index(i++, x, buffer_N));
+						sum += *(buffer + index(i++, x, buffer_N));
+						sum += *(buffer + index(i++, x, buffer_N));
+						int j = x_tile + x;
+						*(row_ptr_ + j) = sum * box_amplitude;
+					}
+				}
+			}
+		}
+	}
 }
