@@ -6,7 +6,14 @@
 #include "Image.h"
 #include "fast_blur.h"
 // - - - - - - - - - - - - - - - - 
+#ifdef INTERNAL
 typedef __int32 int32;
+typedef __int64 int64;
+typedef struct debug_cycle_counter
+{
+	uint64 CycleCount;
+};
+#endif
 // - - - - - - - - - - - - - - - -
 int at(int i, int j, int N) { return i * N + j; }
 // - - - - - - - - - - - - - - - -
@@ -73,6 +80,11 @@ void fast_blur(const Image &in, Image &blurred, int stride)
 // - - - - - - - - - - - - - - - - 
 auto main() -> int
 {
+#if INTERNAL
+	debug_cycle_counter Counter[256];
+#endif
+
+
 	cv::Mat x_mat = cv::imread("lena_512.png", CV_LOAD_IMAGE_GRAYSCALE);
 	//const size_t M = x_mat.rows, N = x_mat.cols;
 	//Image image(x_mat, 3); // Create Image object from image data in cv::Mat object
@@ -80,7 +92,7 @@ auto main() -> int
 	// Done testing: Tested on T=4,...,N for N=4,6,8
 	// Parameters: // TODO: Test on T={4,...,N} for N={4,6,8,16,64,128,256,512,1024,2048,4096}
 	//	(note: 4K resolution is 2160x3840 [ROWSxCOLS])
-	constexpr size_t N = 8; // Input-image size
+	constexpr size_t N = 16; // Input-image size
 	constexpr size_t T = 8; // Tile size
 
 	// Breaks at N=6, T=6
@@ -100,7 +112,7 @@ auto main() -> int
 
 
 	Image x_image(x, N, N, K, N_f);
-	x_image.print("x");
+	//x_image.print("x");
 	delete[] x;
 
 
@@ -113,14 +125,14 @@ auto main() -> int
 	assert(T >= 4); // Algorithm is not designed for shift of 1 
 	assert(T >= K); // Kernel must fit inside tile
 	assert(T <= N);
-	FastBlur::fast_blur_proto(x_image, z_image, N, T, K);
-	z_image.print("z");
+	FastBlur::fast_blur(x_image, z_image, N, T, K);
+	//z_image.print("z");
 
-	std::cout << "\ntruncated:\n";
+	//std::cout << "\ntruncated:\n";
 
 	Image z_image_trunc(N, N);
 	z_image.truncate(N, N, z_image_trunc);
-	z_image_trunc.print("Z");
+	//z_image_trunc.print("Z");
 	//z_image.view();
 
 
