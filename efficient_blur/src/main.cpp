@@ -5,15 +5,6 @@
 #include "tiled.h"
 #include "Image.h"
 #include "fast_blur.h"
-// - - - - - - - - - - - - - - - - 
-#ifdef INTERNAL
-typedef __int32 int32;
-typedef __int64 int64;
-typedef struct debug_cycle_counter
-{
-	uint64 CycleCount;
-};
-#endif
 // - - - - - - - - - - - - - - - -
 int at(int i, int j, int N) { return i * N + j; }
 // - - - - - - - - - - - - - - - -
@@ -80,22 +71,19 @@ void fast_blur(const Image &in, Image &blurred, int stride)
 // - - - - - - - - - - - - - - - - 
 auto main() -> int
 {
-#if INTERNAL
-	debug_cycle_counter Counter[256];
-#endif
+	LARGE_INTEGER PerfCountFrequencyResult;
+	QueryPerformanceFrequency(&PerfCountFrequencyResult);
+	const int64 PerfCountFrequency = PerfCountFrequencyResult.QuadPart;
 
-
-	cv::Mat x_mat = cv::imread("lena_512.png", CV_LOAD_IMAGE_GRAYSCALE);
+	//cv::Mat x_mat = cv::imread("lena_512.png", CV_LOAD_IMAGE_GRAYSCALE);
 	//const size_t M = x_mat.rows, N = x_mat.cols;
 	//Image image(x_mat, 3); // Create Image object from image data in cv::Mat object
 	
 	// Done testing: Tested on T=4,...,N for N=4,6,8
 	// Parameters: // TODO: Test on T={4,...,N} for N={4,6,8,16,64,128,256,512,1024,2048,4096}
 	//	(note: 4K resolution is 2160x3840 [ROWSxCOLS])
-	constexpr size_t N = 16; // Input-image size
-	constexpr size_t T = 8; // Tile size
-
-	// Breaks at N=6, T=6
+	size_t N = pow(2, 10); // 2^12=4096; // Input-image size
+	size_t T = 32; // Tile size
 
 	size_t K = 3; // Kernel size
 	size_t P = floor(K / 2); // Zero-padding on each size
@@ -108,16 +96,11 @@ auto main() -> int
 
 	float* x = new float[N * N];
 	for (int i = 0; i < N * N; i++)
-			x[i] = i + 1;
-
+		x[i] = rand(); //x[i] = i + 1;
 
 	Image x_image(x, N, N, K, N_f);
 	//x_image.print("x");
 	delete[] x;
-
-
-	// TODO: modify to fit output corresponding to 
-	//       input zero-padded such that all tiles fit inside
 
 	Image z_image(N_out, N_out);  // 
 	//z_image.print(); 
@@ -125,58 +108,15 @@ auto main() -> int
 	assert(T >= 4); // Algorithm is not designed for shift of 1 
 	assert(T >= K); // Kernel must fit inside tile
 	assert(T <= N);
-	FastBlur::fast_blur(x_image, z_image, N, T, K);
-	//z_image.print("z");
 
-	//std::cout << "\ntruncated:\n";
-
-	Image z_image_trunc(N, N);
-	z_image.truncate(N, N, z_image_trunc);
-	//z_image_trunc.print("Z");
-	//z_image.view();
-
-
-
-	/// Imp-1
-#ifdef PROTOTYPE
-    // prototype
-#else
-	const cv::Mat x_mat = cv::imread("lena_512.png", CV_LOAD_IMAGE_GRAYSCALE);
-	const size_t M = x_mat.rows, N = x_mat.cols;
-	assert(M == N);
-	const float* x_f = Helper::mat2arr(x_mat);
-	const float* z1 = naive::imp_1_general(x_f, N); 
-#endif
-#ifdef TEST
-	size_t exp = 9;
-	size_t input_M = pow(2, exp), input_N = input_M;
-	size_t kernel_M = 3, kernel_N = kernel_M;
-	size_t tile_M = 3, tile_N = tile_M;
-	assert(tile_M == tile_N);   // TODO: Rect
-	assert(input_M == input_N); // TODO: Rect
-	assert(tile_N >= kernel_N);
-	assert(tile_N <= input_N+1);
-
-
-#ifdef PROTOTYPE
-	// general tiling prototype
-	const float* test_matrix = Helper::genterate_test_matrix(input_M, input_N);
-	LARGE_INTEGER PerfCountFrequencyResult;
-	QueryPerformanceFrequency(&PerfCountFrequencyResult);
-	const int64 PerfCountFrequency = PerfCountFrequencyResult.QuadPart;
-
-	
-
-	while (true)
+	//while (true)
 	{
 		//https://docs.microsoft.com/en-us/windows/desktop/SysInfo/acquiring-high-resolution-time-stamps
-
 		int64 BeginCycleCount = __rdtsc();
-
 		LARGE_INTEGER BeginCounter;
 		QueryPerformanceCounter(&BeginCounter);
 
-        const float* z_proto = Tiled::general(test_matrix, input_M, input_N, kernel_M, kernel_N, tile_M, tile_N);
+		FastBlur::fast_blur(x_image, z_image, N, T, K);
 
 		LARGE_INTEGER EndCounter;
 		QueryPerformanceCounter(&EndCounter);
@@ -184,12 +124,11 @@ auto main() -> int
 		int64 EndCycleCount = __rdtsc();
 
 		int64 CounterElapsed = EndCounter.QuadPart - BeginCounter.QuadPart;
-		int32 ms_per_frame = (1e3*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
-		int32 us_per_frame = (1e6*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
-		int32 ns_per_frame = (1e9*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
-		
-		int64 fps = (1 / ((double)ms_per_frame)*1e3);
+		__int32 ms_per_frame = (1e3*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
+		__int32 us_per_frame = (1e6*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
+		__int32 ns_per_frame = (1e9*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
 
+		int64 fps = (1 / ((double)ms_per_frame)*1e3);
 		int64 CyclesElapsed = EndCycleCount - BeginCycleCount;
 
 		using std::cout;
@@ -198,21 +137,17 @@ auto main() -> int
 		cout << "Frames Per Second = " << fps << "\t";
 		cout << "Cycles elapsed = " << CyclesElapsed / 1e6 << " MHz\t";
 		cout << "Approximate clock-speed: " << fps * CyclesElapsed / 1e9 << " GHz\n";
-
 		//  ( Frames / s. ) x ( Cycles / frame. ) = Clock Speed
-
-
-		delete[] z_proto;
 	}
-	delete[] test_matrix;
-#else
-	const float* z4 = tiled::imp_4_general_tile6x6(x_f, N);
-#endif
 
-#endif // TEST
+	//z_image.print("z");
+	//std::cout << "\ntruncated:\n";
 
+	Image z_image_trunc(N, N);
+	z_image.truncate(N, N, z_image_trunc);
+	//z_image_trunc.print("Z");
+	//z_image.view();
 
-	// TODO: Imp-5: 4-tiles with each in a seperate thread
 #ifdef MATLAB
 	// Compare result against golden reference
 	Matlab::Matlab matlab;
@@ -235,9 +170,6 @@ auto main() -> int
 		delete[] x_f, z1, z4;
 	#endif
 #endif
-
-
-
 
 		getchar();
 	return 0;
