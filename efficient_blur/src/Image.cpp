@@ -9,6 +9,7 @@ Image::Image(size_t M_, size_t N_)
 		*(data + i) = 0;
 }
 
+// zero-padded image
 Image::Image(const float* arr, size_t M_ , size_t N_, size_t K)
 	: M(M_ + 2*(K/2)), N(N_ + 2*(K/2)), // zero-padded dimensions
 	pitch(N),
@@ -23,6 +24,24 @@ Image::Image(const float* arr, size_t M_ , size_t N_, size_t K)
 	size_t P = K / 2; // Ammount of zero-padding on each size
 	for (size_t n1 = P; n1 != M - P; ++n1)
 		for (size_t n2 = P; n2 != N - P; ++n2)
+			data[index(n1, n2, pitch)] = arr[index(n1 - P, n2 - P, N_)];
+}
+
+// zero-padded extra on right and bottom to evenly fit tiles
+Image::Image(const float* arr, size_t M_, size_t N_, size_t K, size_t N_f)
+	: M(N_f), N(N_f), // Full size needed for zero-padding and to evenly fit tiles
+	pitch(N),
+	data{ new float[M * N] }
+{
+	auto index = [](size_t i, size_t j, size_t N) -> int
+	{ return i * N + j; };
+
+	for (int i = 0; i < M * N; ++i)
+		*(data + i) = 0;
+
+	size_t P = K / 2; // Ammount of zero-padding on each size
+	for (size_t n1 = P; n1 != M_ + P; ++n1)
+		for (size_t n2 = P; n2 != N_ + P; ++n2)
 			data[index(n1, n2, pitch)] = arr[index(n1 - P, n2 - P, N_)];
 }
 
@@ -95,4 +114,15 @@ void Image::print(std::string s)
 		cout << std::endl;
 	}
 	cout << "\n";
+}
+
+void Image::truncate(size_t M_, size_t N_, Image& y)
+{
+	auto index = [](size_t i, size_t j, size_t N) -> int
+	{ return i * N + j; };
+
+	for (int i = 0; i < M_; i++)
+		for (int j = 0; j < N_; j++)
+			y.data[index(i, j, N_)] = data[index(i, j, N)];
+
 }

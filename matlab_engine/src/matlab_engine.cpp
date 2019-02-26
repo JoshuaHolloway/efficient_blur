@@ -7,6 +7,16 @@ namespace Matlab
 		std::cout << "Opening MATLAB\nOne moment...\n\n";
 
 		// Start the MATLAB engine
+
+		//try
+		//{
+		//	ep = engOpen(NULL);
+		//}
+		//catch (std::runtime_error)
+		//{
+		//	engClose(ep);
+		//}
+
 		if (!(ep = engOpen(NULL)))
 		{
 			std::cout << "Matlab is having trouble opening!\n\n";
@@ -43,6 +53,8 @@ namespace Matlab
 	{
 		//free(ep);
 		engEvalString(ep, "close all;");
+		engEvalString(ep, "close;");
+		engClose(ep);
 	}
 	//=====================================================
 	void Matlab::command(std::string str)
