@@ -82,8 +82,8 @@ auto main() -> int
 	// Done testing: Tested on T=4,...,N for N=4,6,8
 	// Parameters: // TODO: Test on T={4,...,N} for N={4,6,8,16,64,128,256,512,1024,2048,4096}
 	//	(note: 4K resolution is 2160x3840 [ROWSxCOLS])
-	size_t N = pow(2, 10); // 2^12=4096; // Input-image size
-	size_t T = 32; // Tile size
+	size_t N = pow(2, 11); // 2^12=4096; // Input-image size
+	size_t T = 1024; // Tile size
 
 	size_t K = 3; // Kernel size
 	size_t P = floor(K / 2); // Zero-padding on each size
@@ -96,7 +96,7 @@ auto main() -> int
 
 	float* x = new float[N * N];
 	for (int i = 0; i < N * N; i++)
-		x[i] = rand(); //x[i] = i + 1;
+		x[i] = i + 1; //rand();
 
 	Image x_image(x, N, N, K, N_f);
 	//x_image.print("x");
@@ -109,7 +109,18 @@ auto main() -> int
 	assert(T >= K); // Kernel must fit inside tile
 	assert(T <= N);
 
-	//while (true)
+	// Average of three metrics
+	double micro_seconds_mean = {}; // Runtime
+	double cycles_mean = {};        // Clock-cycles
+	double fps_mean = {};           // Frames-per-second
+
+	constexpr size_t num_runs = 20;
+	double micro_seconds[num_runs] = {};
+	double cycles[num_runs] = {};
+	double fps[num_runs] = {};   
+
+
+	for (int i = 0; i < num_runs; i++)
 	{
 		//https://docs.microsoft.com/en-us/windows/desktop/SysInfo/acquiring-high-resolution-time-stamps
 		int64 BeginCycleCount = __rdtsc();
@@ -128,17 +139,76 @@ auto main() -> int
 		__int32 us_per_frame = (1e6*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
 		__int32 ns_per_frame = (1e9*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
 
-		int64 fps = (1 / ((double)ms_per_frame)*1e3);
+		int64 FPS = (1 / ((double)ms_per_frame)*1e3);
 		int64 CyclesElapsed = EndCycleCount - BeginCycleCount;
 
 		using std::cout;
 		cout << std::fixed << std::setprecision(2);
 		cout << "ms/frame = " << ms_per_frame << "\t";
-		cout << "Frames Per Second = " << fps << "\t";
-		cout << "Cycles elapsed = " << CyclesElapsed / 1e6 << " MHz\t";
-		cout << "Approximate clock-speed: " << fps * CyclesElapsed / 1e9 << " GHz\n";
+		cout << "Frames Per Second = " << FPS << "\t";
+		cout << "Cycles elapsed = " << CyclesElapsed / 1.e6 << " MHz\t";
+		cout << "Approximate clock-speed: " << FPS * CyclesElapsed / 1.e9 << " GHz\n";
 		//  ( Frames / s. ) x ( Cycles / frame. ) = Clock Speed
+
+		micro_seconds[i] = (double)us_per_frame;
+		micro_seconds_mean += (double)us_per_frame;
+		
+		cycles[i] = (double)CyclesElapsed;
+		cycles_mean += (double)CyclesElapsed;
+
+		fps[i] = (double)FPS;
+		fps_mean += (double)FPS;
 	}
+	micro_seconds_mean /= (double)num_runs;
+	cycles_mean /= (double)num_runs;
+	fps_mean /= (double)num_runs;
+
+
+	// higher order statistics
+	double us_std(0), fps_std(0), cycles_std(0);
+	for (int i = 0; i < num_runs; i++)
+	{
+		double us_temp = (micro_seconds[i] - micro_seconds_mean);
+		us_std += us_temp * us_temp; // (us[i] - us_mean)^2
+		//us_skw += us_std * us_temp;  // (us[i] - us_mean)^3
+		//us_krt += us_skw * us_temp;  // (us[i] - us_mean)^4
+
+		double fps_temp = (fps[i] - fps_mean);
+		fps_std += fps_temp * fps_temp; // (fps[i] - fps_mean)^2
+		//fps_skw += fps_std * fps_temp;  // (fps[i] - fps_mean)^3
+		//fps_krt += fps_skw * fps_temp;  // (fps[i] - fps_mean)^4
+
+		double cycles_temp = (cycles[i] - cycles_mean);
+		cycles_std += cycles_temp * cycles_temp; // (cycles[i] - cycles_mean)^2
+		//cycles_skw += cycles_std * cycles_temp;  // (cycles[i] - cycles_mean)^3
+		//cycles_krt += cycles_skw * cycles_temp;  // (cycles[i] - cycles_mean)^4
+	}
+	double factor = (1. / ((double)num_runs - 1.));
+	us_std = sqrt(factor * us_std);
+
+	using std::cout;
+	cout << std::fixed << std::setprecision(1);
+
+	cout << "\n\n---------------------------------------------------------\n";
+	cout << "Statistics summary over " << num_runs << "-runs\n\n";
+	cout << "Image-size: " << N << "x" << N << "\tKernel-size: " << K << "x" << K << "\tTile-size: " << T << "x" << T;;
+	cout << "\n---------------------------------------------------------\n";
+
+	if (1e3 <= micro_seconds_mean && micro_seconds_mean < 1e6)
+		cout << "\nruntime mean = " << micro_seconds_mean / 1.e3 << " ms./frame\t\t(standard-deviation = " << us_std / 1.e3 << ")\n";
+	else
+		cout << "\nruntime mean = " << micro_seconds_mean << " us./frame\t\t(standard-deviation = " << us_std << ")\n";
+
+	cout << "    fps mean = " << fps_mean << " frames/s." << /*"\tstd = " << fps_std << */"\n";
+	cout << " cycles mean = " << cycles_mean / 1.e6 << " MCycles/frame" << /*" MHz.\tstd = " << cycles_std / 1.e6 <<*/ "\n\n\n";
+
+
+
+
+
+
+
+
 
 	//z_image.print("z");
 	//std::cout << "\ntruncated:\n";
