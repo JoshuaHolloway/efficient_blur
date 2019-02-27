@@ -1,0 +1,13 @@
+Runtime as Function of Tile-Size (2048-128)
+
+Tile Size:
+B3:B1925
+=runtimes_2048_4096!$B$3:$B$1925
+
+Number of Tiles per Dimension
+D3:D1925
+=runtimes_2048_4096!$D$3:$D$1925
+
+Runtime (micro-seconds)
+E3:E1925
+=runtimes_2048_4096!$E$3:$E$1925

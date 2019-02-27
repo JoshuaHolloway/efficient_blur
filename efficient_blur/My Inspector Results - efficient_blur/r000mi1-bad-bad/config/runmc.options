@@ -1,0 +1,17 @@
+-r
+C:\dev\efficient_blur\efficient_blur\My Inspector Results - efficient_blur\r000mi1
+--no-check-invalid-access
+--no-analyze-stack
+--leak-maximum=100000
+--leak-check-only
+--leak-check-on-exit
+--check-resource-leaks
+--leak-check-report-reachable
+--freelist-vol=0
+--guard-zone-size=0
+--stack-depth=8
+--no-close-console
+--mrte-mode=auto
+--heartbeat=1
+--
+C:\dev\efficient_blur\efficient_blur\bin\x64-Release\efficient_blur.exe

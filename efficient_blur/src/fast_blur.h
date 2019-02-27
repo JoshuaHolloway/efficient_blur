@@ -161,6 +161,7 @@ namespace FastBlur
 				} // x
 			} // x_tile
 		} // y_tile
+		delete[] buffer;
 	}
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	void fast_blur_proto(const Image &in, Image &out,
@@ -339,6 +340,7 @@ namespace FastBlur
 		}
 
 		cout << "\nDone with Conv\n";
+		delete[] buffer;
 	}
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 		// - - - - - - - - - - - - - - - - - - - - - - - - - - - -

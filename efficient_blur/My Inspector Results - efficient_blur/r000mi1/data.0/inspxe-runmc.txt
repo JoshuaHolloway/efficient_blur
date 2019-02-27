@@ -1,0 +1,30 @@
+
+=== Start: [2019/02/26 20:04:52] === 
+Analysis started...
+Result file: C:\dev\efficient_blur\efficient_blur\My Inspector Results - efficient_blur\r000mi1\r000mi1.inspxe 
+Analysis started for C:\dev\efficient_blur\efficient_blur\bin\x64-Release\efficient_blur.exe (pid = 16212) 
+Loaded module: C:\dev\efficient_blur\efficient_blur\bin\x64-Release\efficient_blur.exe, address range [0x7ff78aad0000-0x7ff78aadcfff] 
+Loaded module: C:\WINDOWS\System32\KERNELBASE.dll, address range [0x7ff97cf20000-0x7ff97d1b2fff], minimal analysis 
+Loaded module: C:\WINDOWS\System32\KERNEL32.DLL, address range [0x7ff97d930000-0x7ff97d9e2fff], minimal analysis 
+Loaded module: C:\WINDOWS\SYSTEM32\ntdll.dll, address range [0x7ff980580000-0x7ff98076cfff], minimal analysis 
+Loaded module: C:\Program Files (x86)\IntelSWTools\Inspector 2019\bin64\dnclrprof.dll, address range [0x7ff951e50000-0x7ff951e9dfff], minimal analysis 
+Loaded module: C:\WINDOWS\System32\ADVAPI32.dll, address range [0x7ff97e800000-0x7ff97e8a2fff], minimal analysis 
+Loaded module: C:\WINDOWS\System32\msvcrt.dll, address range [0x7ff97de10000-0x7ff97deadfff], minimal analysis 
+Loaded module: C:\WINDOWS\System32\sechost.dll, address range [0x7ff97dd70000-0x7ff97de0dfff] 
+Loaded module: C:\WINDOWS\System32\RPCRT4.dll, address range [0x7ff97e4f0000-0x7ff97e611fff], minimal analysis 
+Loaded module: C:\WINDOWS\System32\ole32.dll, address range [0x7ff97e620000-0x7ff97e774fff], minimal analysis 
+Loaded module: C:\WINDOWS\System32\combase.dll, address range [0x23a98220000-0x23a9854cfff], minimal analysis 
+Loaded module: C:\WINDOWS\System32\ucrtbase.dll, address range [0x7ff97ce20000-0x7ff97cf1bfff] 
+Loaded module: C:\WINDOWS\System32\bcryptPrimitives.dll, address range [0x7ff97c650000-0x7ff97c6cdfff], minimal analysis 
+Loaded module: C:\WINDOWS\System32\GDI32.dll, address range [0x7ff97d7b0000-0x7ff97d7d8fff], minimal analysis 
+Loaded module: C:\WINDOWS\System32\gdi32full.dll, address range [0x7ff97d300000-0x7ff97d499fff], minimal analysis 
+Loaded module: C:\WINDOWS\System32\msvcp_win.dll, address range [0x7ff97d6a0000-0x7ff97d73ffff] 
+Loaded module: C:\WINDOWS\System32\USER32.dll, address range [0x7ff980300000-0x7ff980496fff], minimal analysis 
+Loaded module: C:\WINDOWS\System32\win32u.dll, address range [0x7ff97d790000-0x7ff97d7affff] 
+Loaded module: C:\WINDOWS\System32\IMM32.DLL, address range [0x7ff9804a0000-0x7ff9804cdfff], minimal analysis 
+Loaded module: C:\WINDOWS\SYSTEM32\MSVCP140.dll, address range [0x7ff96aec0000-0x7ff96af58fff] 
+Loaded module: C:\WINDOWS\SYSTEM32\VCRUNTIME140.dll, address range [0x7ff96ad80000-0x7ff96ad95fff] 
+Application exit code: 1 
+Result file: C:\dev\efficient_blur\efficient_blur\My Inspector Results - efficient_blur\r000mi1\r000mi1.inspxe 
+Analysis canceled by user
+=== End: [2019/02/26 20:05:08] === 
