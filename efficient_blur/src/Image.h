@@ -23,7 +23,7 @@ public:
 
 	void view();
 
-	void print(std::string);
+	void print(std::string) const;
 
 	void truncate(size_t, size_t, Image&);
 

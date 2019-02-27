@@ -95,7 +95,7 @@ void Image::view()
 	cv::waitKey(0);
 }
 
-void Image::print(std::string s)
+void Image::print(std::string s) const
 {
 	using std::cout;
 	auto loop_print = [=](size_t i, size_t j, float val, std::string name) -> void

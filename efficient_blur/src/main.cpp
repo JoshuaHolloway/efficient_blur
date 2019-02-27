@@ -82,18 +82,20 @@ auto main() -> int
 	std::ofstream outData;
 	outData.open("runtimes.csv", std::ios::app);
 
-	// Done testing: Tested on T=4,...,N for N=4,6,8
-	// Parameters: // TODO: Test on T={4,...,N} for N={4,6,8,16,64,128,256,512,1024,2048,4096}
+	// Tested on T=4,...,N for N=4,6,8 (+2 zero-padded) and T=4,32,64,128,256,512,514 N=512 (512 zero-padded) [all with K=3]
+	// Parameters:
 	//	(note: 4K resolution is 2160x3840 [ROWSxCOLS])
-	size_t N = pow(2, 11); // 2^12=4096; // Input-image size
+	size_t N = pow(2, 9);    // Input-image size (2^12=4096)
+	size_t K = 3;            // Kernel size
+	size_t P = floor(K / 2); // Zero-padding on each size
+	size_t N_zp = N + 2 * P; // Full zero-padded input size
 
-	//size_t T = 1024; // Tile size
-	size_t K = 3; // Kernel size
-	//for (int T = K+1; T <= N; ++T)
-	for (int T = N; T > K; T-=32)
+	// JOSH: I think num_tiles = 1 if T = N_zp
+	//       and num_tiles = 2 if T = N, 
+	//       but what about between these?
+
+	for (int T = N_zp; T > K; T-=1) // vary size of tile
 	{
-		size_t P = floor(K / 2); // Zero-padding on each size
-		size_t N_zp = N + 2 * P; // Full zero-padded input size
 		size_t O = ceil((float)K / 2.f); // Overlap between tiles
 		size_t L = T - O; // Non-overlap of input between tiles
 		size_t num_tiles = ceil((float)(N_zp - O) / (float)L);
@@ -113,14 +115,14 @@ auto main() -> int
 
 		assert(T >= 4); // Algorithm is not designed for shift of 1 
 		assert(T >= K); // Kernel must fit inside tile
-		assert(T <= N);
+		assert(T <= N_zp); // Tile size == N_zp => one tile
 
 		// Average of three metrics
 		double micro_seconds_mean = {}; // Runtime
 		double cycles_mean = {};        // Clock-cycles
 		double fps_mean = {};           // Frames-per-second
 
-		constexpr size_t num_runs = 5;
+		constexpr size_t num_runs = 1;
 		double micro_seconds[num_runs] = {};
 		double cycles[num_runs] = {};
 		double fps[num_runs] = {};
@@ -133,6 +135,8 @@ auto main() -> int
 			LARGE_INTEGER BeginCounter;
 			QueryPerformanceCounter(&BeginCounter);
 
+			/// NOTE: Switch to fast_blur_proto() to see a printout of each tile (perhaps change to small tile size though for viewing ease)
+			//FastBlur::fast_blur_proto(x_image, z_image, N, T, K);
 			FastBlur::fast_blur(x_image, z_image, N, T, K);
 
 			LARGE_INTEGER EndCounter;
@@ -189,7 +193,9 @@ auto main() -> int
 			//cycles_skw += cycles_std * cycles_temp;  // (cycles[i] - cycles_mean)^3
 			//cycles_krt += cycles_skw * cycles_temp;  // (cycles[i] - cycles_mean)^4
 		}
-		double factor = (1. / ((double)num_runs - 1.));
+		double factor = (1. / (double)num_runs); // 1/(num_runs-1)
+		factor = (1. / (double)num_runs);
+
 		us_std = sqrt(factor * us_std);
 
 		using std::cout;
@@ -197,30 +203,30 @@ auto main() -> int
 
 		cout << "\n\n---------------------------------------------------------\n";
 		cout << "Statistics summary over " << num_runs << "-runs\n\n";
-		cout << "Image-size: " << N << "x" << N << "\tKernel-size: " << K << "x" << K << "\tTile-size: " << T << "x" << T;;
+		cout << "Image-size: " << N << "x" << N << "\t\tKernel-size: " << K << "x" << K << "\tTile-size: " << T << "x" << T;;
 		cout << "\n---------------------------------------------------------\n";
 
 
-		// TODO: Fix this
-		double runtime_mean{}, runtime_std{};
-		if (1e3 <= micro_seconds_mean && micro_seconds_mean < 1e6)
-		{
-			runtime_mean = micro_seconds_mean / 1.e3;
-			runtime_std = us_std / 1.e3;
-			cout << "\nruntime mean = " << runtime_mean << " ms./frame\t\t(standard-deviation = " << runtime_std << ")\n";
-		}
-		else
-		{
+		//// TODO: Fix this
+		//double runtime_mean{}, runtime_std{};
+		//if (1e3 <= micro_seconds_mean && micro_seconds_mean < 1e6)
+		//{
+		//	runtime_mean = micro_seconds_mean / 1.e3;
+		//	runtime_std = us_std / 1.e3;
+		//	cout << "\nruntime mean = " << runtime_mean << " ms./frame\t\t(standard-deviation = " << runtime_std << ")\n";
+		//}
+		//else
+		//{
 			cout << "\nruntime mean = " << micro_seconds_mean << " us./frame\t\t(standard-deviation = " << us_std << ")\n";
-			assert(1e3 <= micro_seconds_mean);
-			assert(micro_seconds_mean < 1e6);
-		}
+			//assert(1e3 <= micro_seconds_mean);
+			//assert(micro_seconds_mean < 1e6);
+		//}
 
 		cout << "    fps mean = " << fps_mean << " frames/s." << /*"\tstd = " << fps_std << */"\n";
 		cout << " cycles mean = " << cycles_mean / 1.e6 << " MCycles/frame" << /*" MHz.\tstd = " << cycles_std / 1.e6 <<*/ "\n\n\n";
 
 
-		outData << runtime_mean << "," << runtime_mean << std::endl;
+		outData << micro_seconds_mean << "," << micro_seconds_mean << std::endl;
 		//system("pause");
 
 		//z_image.print("z");

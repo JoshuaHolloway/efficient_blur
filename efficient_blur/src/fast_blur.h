@@ -219,6 +219,16 @@ namespace FastBlur
 			cout << "\n";
 		};
 
+
+		using std::cout;
+		cout << "=============================\n";
+		cout << "Complete Input Matrix " << in.height() << " x " << in.width() << "\n";
+		cout << "=============================\n";
+		in.print("x");
+		cout << "\n";
+
+
+
 		// Work inside tile
 		size_t tile_num = 1;   // Input Tile
 		size_t buffer_num = 1; // Intermdiate Buffer
@@ -231,10 +241,10 @@ namespace FastBlur
 				x_tile < in.width() - overlap; 
 				x_tile += X_Tile - overlap)
 			{
-				std::cout << "===========================\n";
-				std::cout << "        Tile #"
-					<< tile_num++ << "\n";
-				std::cout << "===========================\n";
+				cout << "===================================\n";
+				cout << "        Tile #"
+					<< tile_num++ << " (" << Y_Tile << " x " << X_Tile << ")\n";
+				cout << "===================================\n";
 				print_tile("x:", in.data,
 					in.height(), in.width(), // Dimensions of matrix
 					T, T,            // Dimensions of tile
@@ -269,19 +279,20 @@ namespace FastBlur
 						}
 						size_t i = y;
 						size_t j = x;
-						std::cout << "\tWrite to Buffer:  ";
+						cout << "\tWrite to Buffer:  ";
 						buffer[index(i, j, buffer_N)] = sum * box_amplitude;
 						auto temp = buffer[index(i, j, buffer_N)];
 						loop_print(i, j, temp, "y");
-						std::cout << "\n";
+						cout << "\n";
 					}
+					int debug = 0;
 				}
 
 
-				std::cout << "===========================\n";
-				std::cout << "        Buffer #"
+				cout << "===============================\n";
+				cout << "        Buffer #"
 					<< buffer_num++ << "\n";
-				std::cout << "===========================\n";
+				cout << "===============================\n";
 				print(buffer, buffer_M, buffer_N, "y");
 
 				size_t stride = 1;
@@ -313,23 +324,21 @@ namespace FastBlur
 						auto temp = sum * box_amplitude;
 						out.data[index(i, j, out_N)] = temp;
 
-						std::cout << "\tWrite to Output:  ";
+						cout << "\tWrite to Output:  ";
 
 						loop_print(i, j, temp, "z");
-						std::cout << "\n";
+						cout << "\n";
 
-						// Look at full output
-						std::cout << "\n";
-						print(out.data, N, N, "z");
-						std::cout << "\n";
+						/// Look at full output
+						//cout << "\n";
+						//print(out.data, N, N, "z");
+						//cout << "\n";
 					}
 				}
 			}
 		}
 
-
-
-		std::cout << "\nDone with Conv\n";
+		cout << "\nDone with Conv\n";
 	}
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 		// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
