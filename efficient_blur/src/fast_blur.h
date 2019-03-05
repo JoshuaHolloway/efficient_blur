@@ -1,5 +1,6 @@
 #pragma once
 #include "Image.h"
+#include "Measure.h"
 namespace FastBlur
 {
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -157,6 +158,113 @@ namespace FastBlur
 
 						auto temp = sum * box_amplitude;
 						out.data[index(i, j, out_N)] = temp;
+					} // y
+				} // x
+			} // x_tile
+		} // y_tile
+		delete[] buffer;
+	}
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	void fast_blur_measure(const Image &in, Image &out,
+		size_t N, size_t T, size_t K, Measure& measure)
+	{
+		// Same as fast_blur() with measuring
+
+		// Zero-padded to fit all tiles in
+		size_t in_M = in.height();
+		size_t in_N = in.width();
+
+		// Output will temporarilly be size corresponding to input
+		// and then discard the right and bottom
+		size_t P = K / 2;
+
+		size_t out_M = in_M - 2 * P;
+		size_t out_N = in_N - 2 * P;
+
+		// Tiles of size YTile x XTile
+		size_t Y_Tile = T;
+		size_t X_Tile = T;
+
+		// Intermediate buffer-size
+		size_t buffer_M = T;
+		size_t buffer_N = T - 2 * (K / 2);
+
+		// Allocate space for buffer and output
+		float* buffer = new float[buffer_M * buffer_N];
+
+		float box_amplitude = 1 / float(K);
+
+		size_t output_elems_per_tile_M = T - 2 * P;
+		size_t output_elems_per_tile_N = T - 2 * P;
+
+
+		// Work inside tile
+		size_t tile_num = 1;   // Input Tile
+		size_t buffer_num = 1; // Intermdiate Buffer
+		size_t overlap = 2;
+		for (int y_tile = 0;
+			y_tile < in.height() - overlap;
+			y_tile += Y_Tile - overlap)
+		{
+			for (int x_tile = 0;
+				x_tile < in.width() - overlap;
+				x_tile += X_Tile - overlap)
+			{
+				int n1 = y_tile;
+				int n2 = x_tile;
+
+				// Write to buffer
+				for (size_t y = 0; y < buffer_M; y++)
+				{
+					//float * row_ptr = in.data + (y_tile + y) * in.stride();
+					for (size_t x = 0; x < buffer_N; x++)
+					{
+						// Do 1-D conv here
+						float sum = 0.f;
+						for (size_t k2 = 0; k2 < K; ++k2)
+						{
+							int i = n1 + y;
+							int j = n2 + x + k2;
+							sum += in.data[index(i, j, in.stride())];
+							measure.inc_memory_read();
+							measure.inc_add();
+							/// NOTE: Count only adds
+							///		 When we add a kernel mults will be counted also
+							//measure.inc_mult();
+						}
+						size_t i = y;
+						size_t j = x;
+						buffer[index(i, j, buffer_N)] = sum * box_amplitude;
+						measure.inc_buffer_write();
+					}
+				}
+
+				// TODO: Change to row-major writes
+
+				// Read from buffer
+				for (size_t x = 0; x < output_elems_per_tile_N; x++)
+				{
+					for (size_t y = 0; y < output_elems_per_tile_M; y++)
+					{
+						// Do 1-D conv
+						float sum = 0.f;
+
+						// TODO: Unroll loop
+						for (size_t k1 = 0; k1 < K; ++k1)
+						{
+							int i = y + k1;
+							int j = x;
+							sum += buffer[index(i, j, buffer_N)];
+							measure.inc_buffer_read();
+						}
+						int i = y_tile + y;
+						int j = x_tile + x;
+
+						auto temp = sum * box_amplitude;
+						out.data[index(i, j, out_N)] = temp;
+
+						measure.inc_memory_write();      
+
 					} // y
 				} // x
 			} // x_tile

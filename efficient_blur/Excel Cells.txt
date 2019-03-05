@@ -11,3 +11,11 @@ D3:D1925
 Runtime (micro-seconds)
 E3:E1925
 =runtimes_2048_4096!$E$3:$E$1925
+
+Frames per Second
+G3:G1925
+=runtimes_2048_4096!$G$3:$G$1925
+
+Clock Cycles
+H3:H1925
+=runtimes_2048_4096!$H$3:$H$1925

@@ -8,6 +8,7 @@
 #include "tiled.h"
 #include "Image.h"
 #include "fast_blur.h"
+#include "Measure.h"
 // - - - - - - - - - - - - - - - -
 int at(int i, int j, int N) { return i * N + j; }
 // - - - - - - - - - - - - - - - -
@@ -74,27 +75,44 @@ void fast_blur(const Image &in, Image &blurred, int stride)
 // - - - - - - - - - - - - - - - - 
 auto main() -> int
 {
+	Measure measure;
+
 	// Number of runs to average statistics over
 	constexpr size_t num_runs = 2;
 
-	//https://docs.microsoft.com/en-us/windows/desktop/SysInfo/acquiring-high-resolution-time-stamps
+
 	LARGE_INTEGER PerfCountFrequencyResult;
 	QueryPerformanceFrequency(&PerfCountFrequencyResult);
 	const int64 PerfCountFrequency = PerfCountFrequencyResult.QuadPart;
 
 	// CSV file to write experimental data to
 	std::ofstream outData;
-	outData.open("runtimes.csv", std::ios::app);
+	outData.open("runtimes_demo.csv", std::ios::app);
 	
 	// Set up columns with tiles
 	outData << "All stats are averaged over " << num_runs << "-runs\n";
-	outData << "N_zp," << "T," << "K," << "tiles (per dim),"  
-		<< "Runtime [micro-s./frame]," << "Runtime variance," 
-		<< "FPS [frames/s.]," << "cycle-count [clock-tics/frame]\n";
+	outData << "N_zp"							<< ",";			// col-1  (N_zp)
+	outData << "T"								<< ",";			// col-2  (T)
+	outData << "K"								<< ",";			// col-3  (K)
+	outData << "tiles (per dim)"				<< ",";			// col-4  (tiles) 
+	outData << "Runtime [micro-s./frame]"		<< ",";			// col-5  (runtime mean)
+	outData << "Runtime variance"				<< ",";			// col-6  (runtime std)
+	outData << "FPS [frames/s.]"				<< ",";			// col-7  (fps)
+	outData << "cycle-count [clock-tics/frame]"	<< ",";			// col-8  (cycles)
+
+	outData << "adds"							<< ",";			// col-9  (adds)
+	outData << "memory-reads"					<< ",";			// col-10 (memory-reads)
+	outData << "memory-writes"					<< ",";			// col-11 (memory-writes)
+	outData << "buffer-reads"					<< ",";			// col-12 (buffer-reads)
+	outData << "buffer-writes"					<< std::endl;	// col-13 (buffer-writes)
 
 	// Vary image size
 	constexpr size_t base = 2;
-	for (size_t exponent = 11; exponent <= 13; ++exponent)
+#ifdef DEBUG
+	size_t exponent = 3; // CHANGE TO DEBUG!
+#else
+	for (size_t exponent = 8; exponent <= 13; ++exponent) // CHANGE TO RELEASE!
+#endif
 	{
 		// exponent      N
 		// 8             256
@@ -125,13 +143,25 @@ auto main() -> int
 		//         down to when 3 tiles fit in evenly
 
 		// Vary size of tile
-		for (size_t T = N_zp; T > K; T -= 1)
+#ifdef DEBUG
+		size_t T = 10; // CHANGE TO DEBUG!
+		//size_t T = 9; // CHANGE TO DEBUG!
+		//size_t T = 6; // CHANGE TO DEBUG!
+#else
+		for (size_t T = N_zp; T > K; T -= 1) // CHANGE TO RELEASE
+#endif
 		{
 			size_t O = ceil((float)K / 2.f); // Overlap between tiles
 			size_t L = T - O; // Non-overlap of input between tiles
 			size_t num_tiles = ceil((float)(N_zp - O) / (float)L);
 			size_t N_f = L * (num_tiles - 1) + T; // Needed size of zero-padded input to evenly fit tiles
 			size_t N_out = N_f - 2 * P; // Output size (before discarding right and bottom)
+
+			using std::cout;
+			cout << "\n\n-----------------------------------------------------------------------------\n";
+			cout << "Statistics summary over " << num_runs << "-runs\n\n";
+			cout << "Image-size: " << N << "x" << N << "\t\tKernel-size: " << K << "x" << K << "\tTile-size: " << T << "x" << T;;
+			cout << "\n-----------------------------------------------------------------------------\n";
 
 			float* x = new float[N * N];
 			for (int i = 0; i < N * N; i++)
@@ -159,6 +189,10 @@ auto main() -> int
 			double fps[num_runs] = {};
 
 
+			// TODO: Encapsulate all the timing measurements into a Measure object
+		
+			
+
 			for (int run = 0; run < num_runs; ++run)
 			{
 				int64 BeginCycleCount = __rdtsc();
@@ -166,8 +200,12 @@ auto main() -> int
 				QueryPerformanceCounter(&BeginCounter);
 
 				/// NOTE: Switch to fast_blur_proto() to see a printout of each tile (perhaps change to small tile size though for viewing ease)
-				//FastBlur::fast_blur_proto(x_image, z_image, N, T, K);
-				FastBlur::fast_blur(x_image, z_image, N, T, K);
+#ifdef DEBUG
+				FastBlur::fast_blur_proto(x_image, z_image, N, T, K); // Debug
+#else
+				//FastBlur::fast_blur(x_image, z_image, N, T, K); // Release
+				FastBlur::fast_blur_measure(x_image, z_image, N, T, K, measure); // Release
+#endif
 
 				LARGE_INTEGER EndCounter;
 				QueryPerformanceCounter(&EndCounter);
@@ -182,7 +220,7 @@ auto main() -> int
 				int64 FPS = (1 / ((double)ms_per_frame)*1e3);
 				int64 CyclesElapsed = EndCycleCount - BeginCycleCount;
 
-				using std::cout;
+
 				cout << std::fixed << std::setprecision(2);
 				cout << "ms/frame = " << ms_per_frame << "\t";
 				cout << "Frames Per Second = " << FPS << "\t";
@@ -231,12 +269,6 @@ auto main() -> int
 			using std::cout;
 			cout << std::fixed << std::setprecision(1);
 
-			cout << "\n\n---------------------------------------------------------\n";
-			cout << "Statistics summary over " << num_runs << "-runs\n\n";
-			cout << "Image-size: " << N << "x" << N << "\t\tKernel-size: " << K << "x" << K << "\tTile-size: " << T << "x" << T;;
-			cout << "\n---------------------------------------------------------\n";
-
-
 			//// TODO: Fix this
 			//double runtime_mean{}, runtime_std{};
 			//if (1e3 <= micro_seconds_mean && micro_seconds_mean < 1e6)
@@ -247,19 +279,31 @@ auto main() -> int
 			//}
 			//else
 			//{
-				cout << "\nruntime mean = " << micro_seconds_mean << " us./frame\t\t(standard-deviation = " << us_std << ")\n";
+				cout << "\n\n\nruntime mean = " << micro_seconds_mean << " us./frame\t\t(standard-deviation = " << us_std << ")\n";
 				//assert(1e3 <= micro_seconds_mean);
 				//assert(micro_seconds_mean < 1e6);
 			//}
 
 			cout << "    fps mean = " << fps_mean << " frames/s." << /*"\tstd = " << fps_std << */"\n";
-			cout << " cycles mean = " << cycles_mean / 1.e6 << " MCycles/frame" << /*" MHz.\tstd = " << cycles_std / 1.e6 <<*/ "\n\n\n";
+			cout << " cycles mean = " << cycles_mean / 1.e6 << " MCycles/frame" << /*" MHz.\tstd = " << cycles_std / 1.e6 <<*/ "\n\n";
 
 			// Send data to excel
-			outData << N_zp << "," << T << "," << K << "," << num_tiles << ",";
-			outData << micro_seconds_mean << "," << us_std << ",";
-			outData << fps_mean << "," << cycles_mean << std::endl;
-			//system("pause");
+			outData << N_zp							<< ",";			// col-1  (N_zp)
+			outData << T							<< ",";			// col-2  (T)
+			outData << K							<< ",";			// col-3  (K)
+			outData << num_tiles					<< ",";			// col-4  (tiles) 
+			outData << micro_seconds_mean			<< ",";			// col-5  (runtime mean)
+			outData << us_std						<< ",";			// col-6  (runtime std)
+			outData << fps_mean						<< ",";			// col-7  (fps)
+			outData << cycles_mean					<< ",";			// col-8  (cycles)
+				
+			outData << measure.get_adds()			<< ",";			// col-9  (adds)
+			outData << measure.get_memory_reads()	<< ",";			// col-10 (memory-reads)
+			outData << measure.get_memory_writes()  << ",";			// col-11 (memory-writes)
+			outData << measure.get_buffer_reads()   <<  ",";		// col-12 (buffer-reads)
+			outData << measure.get_buffer_writes()  << std::endl;	// col-13 (buffer-writes)
+
+
 
 			//z_image.print("z");
 			//std::cout << "\ntruncated:\n";

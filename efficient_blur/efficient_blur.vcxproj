@@ -57,7 +57,7 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\include;$(SolutionDir)matlab_engine\src;$(MATLABROOT)\extern\include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>PROTOTYPE;MATLAB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PROTOTYPE;MATLAB;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)$(SolutionName)\dependencies\opencv\lib</AdditionalLibraryDirectories>
@@ -67,7 +67,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -83,10 +83,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Measure.cpp" />
     <ClCompile Include="src\Image.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Measure.h" />
     <ClInclude Include="src\fast_blur.h" />
     <ClInclude Include="src\Image.h" />
     <ClInclude Include="src\helper.h" />
