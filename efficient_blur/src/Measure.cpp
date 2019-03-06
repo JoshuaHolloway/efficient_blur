@@ -91,13 +91,42 @@ double Measure::toc()
 	double clock_speed_approximate_GHz = (double)fps * cycle_elapsed_G; // [Gcycles / s.] = GHz
 	// Note: clock_speed_measured is measured more accurately
 
-	std::cout << "\n\nINSIDE toc():\n";
-	std::cout << std::fixed << std::setprecision(2);
-	std::cout << "ms/frame = " << perf_counter_ms << "\t";
-	std::cout << "Frames Per Second = " << fps << "\t";
-	std::cout << "Cycles elapsed = " << cycle_elapsed_M << " MHz\t";
-	std::cout << "Approximate clock-speed: " << clock_speed_approximate_GHz << " GHz\t";
-	std::cout << "Process time elapsed: " << process_time_elapsed_ms << " ms.\n";
+	// - - - - - - - - - - - - - - - - - - - - - - 
+	// Bandwidth
+	total_writes = memory_writes + buffer_writes;
+	total_reads = memory_reads + buffer_reads;
+
+	double total_bytes_written = (double)total_writes * (double)elem_size;
+	double total_bytes_read = (double)total_reads * (double)elem_size;
+
+	read_bandwidth_Bps = total_bytes_read / perf_counter_s;
+	write_bandwidth_Bps = total_bytes_written / perf_counter_s;
+
+	// - - - - - - - - - - - - - - - - - - - - - - 
+	// FLOPS
+	FLOPs = adds; // total # of adds + mults [not per second!] - NOTE: Will add in mults when kernel is added
+	FLOPS = FLOPs / perf_counter_s; // [Floating-point ops per second]
+
+	using std::cout;
+	using std::endl;
+	cout << "\n\nINSIDE toc():\n";
+	cout << std::fixed << std::setprecision(2);
+	cout << "ms/frame = " << perf_counter_ms << "\t";
+	cout << "Frames Per Second = " << fps << "\t";
+	cout << "Cycles elapsed = " << cycle_elapsed_M << " MHz\t";
+	cout << "Approximate clock-speed: " << clock_speed_approximate_GHz << " GHz";
+
+
+	cout << endl;
+	cout << "Process time elapsed: " << process_time_elapsed_ms << " ms.\t";
+	cout << "Number of Memory Reads: " << total_reads << "\n";
+	cout << "Number of Memory Writes: " << total_writes << "\n";
+	cout << "Memory Read: " << total_bytes_read << " B.\n";
+	cout << "Memory Written: " << total_bytes_written << " B.\n";
+	cout << "Read Bandwidth " << read_bandwidth_Bps / 1.e6 << " MBps\n";
+	cout << "Write Bandwidth " << write_bandwidth_Bps / 1.e6 << " MBps\n";
+	cout << "FLOPs: " << FLOPs / 1.e6 << " MFLOP\n";
+	cout << "FLOPS: " << FLOPS / 1.e6 << " MFLOPS\n";
 
 
 	std::cout << "\n\n\n";
@@ -115,7 +144,6 @@ double Measure::measure_clock_frequency()
 	clock_speed_measured_Hz = cycle_elapsed;
 	clock_speed_measured_Mhz = cycle_elapsed;
 	clock_speed_measured_Ghz = cycle_elapsed;
-
 
 	std::cout << std::fixed << std::setprecision(2);
 	std::cout << "Measured clock-frequency:  " << clock_speed_measured_Ghz << " GHz.\n";

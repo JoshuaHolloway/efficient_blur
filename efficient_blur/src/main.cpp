@@ -223,19 +223,14 @@ auto main() -> int
 				// ===============================================================
 				// ===============================================================
 
-
-
 				LARGE_INTEGER EndCounter;
 				QueryPerformanceCounter(&EndCounter);
 
 				int64 EndCycleCount = __rdtsc();
 
-
 				// Compare my new timer to the previous tone
 				// TODO: Integrate in FPS, etc.
 				measure.toc();
-
-
 
 				int64 CounterElapsed = EndCounter.QuadPart - BeginCounter.QuadPart;
 				__int32 ms_per_frame = (1e3*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
@@ -244,7 +239,6 @@ auto main() -> int
 
 				int64 FPS = (1 / ((double)ms_per_frame)*1e3);
 				int64 CyclesElapsed = EndCycleCount - BeginCycleCount;
-
 
 				cout << std::fixed << std::setprecision(2);
 				cout << "ms/frame = " << ms_per_frame << "\t";

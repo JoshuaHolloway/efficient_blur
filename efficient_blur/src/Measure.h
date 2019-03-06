@@ -42,12 +42,22 @@ private:
 	size_t adds, mults;
 	size_t buffer_writes, buffer_reads;
 	size_t memory_writes, memory_reads;
+
+	size_t total_writes;
+	size_t total_reads;
 	
 	size_t num_tiles;
+	
+	const size_t elem_size = sizeof(float);
 
-	//double FLOPs, FLOPS;  // quantity 
-	//double MFLOPs, MFLOPS;// rate
-
+	// Memory bandwidth
+	double read_bandwidth_Bps, write_bandwidth_Bps; //  [bytes per second]
+	double read_kBps, write_bandwidth_kBps; // [kB per second]
+	double read_MBps, write_bandwidth_MBps; // [MB per second]
+	
+	// Computational Throughput
+	double FLOPs, FLOPS;  // quantity [Floating-point ops]
+	//double MFLOPs, MFLOPS;// rate		[Floating-point ops per second]
 
 	LARGE_INTEGER perf_counter_start{ 0 };
 	LARGE_INTEGER perf_counter_stop{ 0 };
