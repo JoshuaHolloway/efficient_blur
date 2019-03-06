@@ -21,3 +21,13 @@ All stats are averaged over 2-runs
 N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
 All stats are averaged over 2-runs
 N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes

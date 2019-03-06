@@ -1,6 +1,6 @@
 #pragma once
 #include <windows.h>
-
+#include <time.h>
 class Measure
 {
 public:
@@ -8,7 +8,10 @@ public:
 	~Measure();
 
 	void tic();
-	void toc();
+	double toc(); // actual interface
+	void toc_internal();
+
+	double measure_clock_frequency();
 
 	void inc_add();
 	void inc_mult();
@@ -26,6 +29,15 @@ public:
 	size_t get_adds();
 	size_t get_mults();
 
+	/// TODO:
+	// Calculate Read-Bandwidth
+	// Calculate Write-Bandwidth
+	// Calculate FLOPS
+	// Calculate Arithmetic Intensity
+	// Measure Machine Balance (alpha/tau)
+	// Measure time-per-word (tau)
+	// Measure time-per-op (tau)
+
 private:
 	size_t adds, mults;
 	size_t buffer_writes, buffer_reads;
@@ -35,6 +47,7 @@ private:
 
 	//double FLOPs, FLOPS;  // quantity 
 	//double MFLOPs, MFLOPS;// rate
+
 
 	LARGE_INTEGER perf_counter_start{ 0 };
 	LARGE_INTEGER perf_counter_stop{ 0 };
@@ -53,8 +66,14 @@ private:
 	double cycle_elapsed_M{ 0 }; // Mega-cycles
 	double cycle_elapsed_G{ 0 }; // Giga-cycles
 
-	double clock_speed_measured{ 0 };
+	double clock_speed_measured_Hz{ 0 }; // Hz.
+	double clock_speed_measured_Mhz{ 0 }; // MHz.
+	double clock_speed_measured_Ghz{ 0 }; // GHz.
 
+	//clock_t clock(void);
+	clock_t process_time_start = {};
+	clock_t process_time_stop = {};
+	double process_time_elapsed_ms{0};
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

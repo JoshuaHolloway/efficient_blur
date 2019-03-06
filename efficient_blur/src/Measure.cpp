@@ -18,11 +18,18 @@ void Measure::tic()
 {
 	cycle_counter_start = __rdtsc();
 	QueryPerformanceCounter(&perf_counter_start);
+	process_time_start = clock();
+}
+void Measure::toc_internal()
+{
+	process_time_stop = clock();
+	QueryPerformanceCounter(&perf_counter_stop);
+	cycle_counter_stop = __rdtsc();
 }
 
 #include <iostream>
 #include <iomanip>
-void Measure::toc()
+double Measure::toc()
 {
 	// refere to Measure.h to see documentation
 	//
@@ -57,14 +64,17 @@ void Measure::toc()
 	//			   These cycles don't nessesarily mean instructions, they mean cycles which may be
 	//			   dependent on how warm the cache was, how much time it took to retrieve memory, etc.
 
-	QueryPerformanceCounter(&perf_counter_stop);
-	perf_counter_elapsed 
-		= (double)perf_counter_stop.QuadPart
-		- (double)perf_counter_start.QuadPart;
+	toc_internal();
+
+	// Process time elapsed
+	process_time_elapsed_ms = (double)process_time_stop - (double)process_time_start; // apparently ms.
 
 	// We now have the elapsed number of ticks, along with the
 	// number of ticks-per-second. We use these values
 	// to convert to the number of elapsed microseconds.
+	perf_counter_elapsed
+		= (double)perf_counter_stop.QuadPart
+		- (double)perf_counter_start.QuadPart;
 	perf_counter_s =         perf_counter_elapsed / perf_counter_freq;
 	perf_counter_ms = 1.e3 * perf_counter_elapsed / perf_counter_freq;
 	perf_counter_us = 1.e6 * perf_counter_elapsed / perf_counter_freq;
@@ -72,13 +82,13 @@ void Measure::toc()
 
 	fps = 1. / perf_counter_s; // 1 / [s./frame]
 
-	cycle_counter_stop = __rdtsc();
-	cycle_elapsed = cycle_counter_stop - cycle_counter_start;
-	cycle_elapsed_M = (double)cycle_elapsed / 1.e6;
-	cycle_elapsed_G = (double)cycle_elapsed / 1.e9;
+	
+	cycle_elapsed = cycle_counter_stop - cycle_counter_start; // [cycles / frame]
+	cycle_elapsed_M = (double)cycle_elapsed / 1.e6;           // [Mcycles / frame]
+	cycle_elapsed_G = (double)cycle_elapsed / 1.e9;           // [Gcycles / frame]
 
-	//  ( Frames / s. ) x ( Cycles / frame. ) = Clock Speed
-	double clock_speed_approximate_GHz = (double)fps * cycle_elapsed_G;
+	//  ( Frames / s. ) x ( Cycles / frame. ) = Clock Speed [cycles / s.]
+	double clock_speed_approximate_GHz = (double)fps * cycle_elapsed_G; // [Gcycles / s.] = GHz
 	// Note: clock_speed_measured is measured more accurately
 
 	std::cout << "\n\nINSIDE toc():\n";
@@ -86,8 +96,32 @@ void Measure::toc()
 	std::cout << "ms/frame = " << perf_counter_ms << "\t";
 	std::cout << "Frames Per Second = " << fps << "\t";
 	std::cout << "Cycles elapsed = " << cycle_elapsed_M << " MHz\t";
-	std::cout << "Approximate clock-speed: " << clock_speed_approximate_GHz << " GHz\n";
+	std::cout << "Approximate clock-speed: " << clock_speed_approximate_GHz << " GHz\t";
+	std::cout << "Process time elapsed: " << process_time_elapsed_ms << " ms.\n";
+
+
 	std::cout << "\n\n\n";
+
+	return perf_counter_s;
+}
+
+double Measure::measure_clock_frequency()
+{
+	tic();
+	int ms = 1000;
+	Sleep(ms);
+	toc();
+
+	clock_speed_measured_Hz = cycle_elapsed;
+	clock_speed_measured_Mhz = cycle_elapsed;
+	clock_speed_measured_Ghz = cycle_elapsed;
+
+
+	std::cout << std::fixed << std::setprecision(2);
+	std::cout << "Measured clock-frequency:  " << clock_speed_measured_Ghz << " GHz.\n";
+
+	// Return clock frequency estimate in MHz
+	return clock_speed_measured_Hz;
 }
 
 void Measure::inc_add()          { adds++; }
