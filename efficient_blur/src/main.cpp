@@ -80,7 +80,6 @@ auto main() -> int
 	// Number of runs to average statistics over
 	constexpr size_t num_runs = 2;
 
-
 	LARGE_INTEGER PerfCountFrequencyResult;
 	QueryPerformanceFrequency(&PerfCountFrequencyResult);
 	const int64 PerfCountFrequency = PerfCountFrequencyResult.QuadPart;
@@ -96,8 +95,8 @@ auto main() -> int
 	outData << "K"								<< ",";			// col-3  (K)
 	outData << "tiles (per dim)"				<< ",";			// col-4  (tiles) 
 	outData << "Runtime [micro-s./frame]"		<< ",";			// col-5  (runtime mean)
-	outData << "Runtime variance"				<< ",";			// col-6  (runtime std)
-	outData << "FPS [frames/s.]"				<< ",";			// col-7  (fps)
+	outData << "Runtime std"					<< ",";			// col-6  (runtime std)
+	outData << "FPS "							<< ",";			// col-7  (fps)
 	outData << "cycle-count [clock-tics/frame]"	<< ",";			// col-8  (cycles)
 
 	outData << "adds"							<< ",";			// col-9  (adds)
@@ -111,7 +110,7 @@ auto main() -> int
 #ifdef DEBUG
 	size_t exponent = 3; // CHANGE TO DEBUG!
 #else
-	for (size_t exponent = 8; exponent <= 13; ++exponent) // CHANGE TO RELEASE!
+	for (size_t exponent = 10; exponent <= 13; ++exponent) // CHANGE TO RELEASE!
 #endif
 	{
 		// exponent      N
@@ -129,18 +128,6 @@ auto main() -> int
 		size_t K = 3;            // Kernel size
 		size_t P = floor(K / 2); // Zero-padding on each size
 		size_t N_zp = N + 2 * P; // Full zero-padded input size
-
-
-
-		// JOSH: I think num_tiles = 1 if T = N_zp
-		//       and num_tiles = 2 if T = N, 
-		//       but what about between these?
-		// ANSWER: Remember that you increase the zero-padding
-		//         with extra zeros such that the number of 
-		//         tiles evenly fit into the image.
-		//         Therefore, num_tiles=2 
-		//         for T=N_zp-1, N_zp-2, ... 
-		//         down to when 3 tiles fit in evenly
 
 		// Vary size of tile
 #ifdef DEBUG
@@ -199,18 +186,56 @@ auto main() -> int
 				LARGE_INTEGER BeginCounter;
 				QueryPerformanceCounter(&BeginCounter);
 
+				measure.tic();
+
 				/// NOTE: Switch to fast_blur_proto() to see a printout of each tile (perhaps change to small tile size though for viewing ease)
 #ifdef DEBUG
 				FastBlur::fast_blur_proto(x_image, z_image, N, T, K); // Debug
 #else
+
+
 				//FastBlur::fast_blur(x_image, z_image, N, T, K); // Release
 				FastBlur::fast_blur_measure(x_image, z_image, N, T, K, measure); // Release
+
+
 #endif
+
+
+				// ===============================================================
+				// ===============================================================
+				// ===============================================================
+				// ===============================================================
+				// ===============================================================
+				// ===============================================================
+				// ===============================================================
+				// TODO: Incorporate: 
+				// 1. Bandwidth
+				//		-Step 1: FLOPs (count number of ops)
+				//		-Step 2: Divide by time elapsed
+				// 2. Throughput
+				//		-Step 1: Count number of memory reads/writes
+				//		-Step 2: ...
+				// ===============================================================
+				// ===============================================================
+				// ===============================================================
+				// ===============================================================
+				// ===============================================================
+				// ===============================================================
+				// ===============================================================
+
+
 
 				LARGE_INTEGER EndCounter;
 				QueryPerformanceCounter(&EndCounter);
 
 				int64 EndCycleCount = __rdtsc();
+
+
+				// Compare my new timer to the previous tone
+				// TODO: Integrate in FPS, etc.
+				measure.toc();
+
+
 
 				int64 CounterElapsed = EndCounter.QuadPart - BeginCounter.QuadPart;
 				__int32 ms_per_frame = (1e3*CounterElapsed) / PerfCountFrequency; // counts / (counts/s) = s
@@ -340,5 +365,5 @@ auto main() -> int
 	} // for exponent
 
 	//system("pause");
-	return 0;
+	return(0);
 }

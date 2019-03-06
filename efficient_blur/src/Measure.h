@@ -1,14 +1,14 @@
 #pragma once
+#include <windows.h>
+
 class Measure
 {
-	//https://docs.microsoft.com/en-us/windows/desktop/SysInfo/acquiring-high-resolution-time-stamps
-	//https://docs.microsoft.com/en-us/visualstudio/profiling/?view=vs-2017
-
-	// Intel Processor Events Reference:
-	// https://software.intel.com/en-us/vtune-amplifier-help-intel-processor-events-reference
 public:
 	Measure();
 	~Measure();
+
+	void tic();
+	void toc();
 
 	void inc_add();
 	void inc_mult();
@@ -33,8 +33,28 @@ private:
 	
 	size_t num_tiles;
 
-	double FLOPs, FLOPS;  // quantity 
-	double MFLOPs, MFLOPS;// rate
+	//double FLOPs, FLOPS;  // quantity 
+	//double MFLOPs, MFLOPS;// rate
+
+	LARGE_INTEGER perf_counter_start{ 0 };
+	LARGE_INTEGER perf_counter_stop{ 0 };
+	double perf_counter_elapsed{ 0 };
+	double perf_counter_freq{ 0 };
+	double perf_counter_s{ 0 };  // seconds
+	double perf_counter_ms{ 0 }; // milli-seconds
+	double perf_counter_us{ 0 }; // micro-seconds
+	double perf_counter_ns{ 0 }; // nano-seconds
+
+	size_t fps{ 0 };
+
+	__int64 cycle_counter_start{ 0 };
+	__int64 cycle_counter_stop{ 0 };
+	__int64 cycle_elapsed{ 0 };   // cycles
+	double cycle_elapsed_M{ 0 }; // Mega-cycles
+	double cycle_elapsed_G{ 0 }; // Giga-cycles
+
+	double clock_speed_measured{ 0 };
+
 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -75,6 +95,9 @@ private:
 	//		 the processor time stamp.
 	//		-The processor time stamp records the number of clock 
 	//		 cycles since the last reset.
+	// -Intel documentation:
+	//		-RDTSC—Read Time-Stamp Counter (page 4-543 in Intel Manual Vol. 2B)
+	// 
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	//clock_t clock(void);
 	// -Description:
@@ -96,4 +119,9 @@ private:
 	//		 returned by the clock function by the macro CLOCKS_PER_SEC.
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	//https://docs.microsoft.com/en-us/windows/desktop/SysInfo/acquiring-high-resolution-time-stamps
+	//https://docs.microsoft.com/en-us/visualstudio/profiling/?view=vs-2017
+
+	// Intel Processor Events Reference:
+	// https://software.intel.com/en-us/vtune-amplifier-help-intel-processor-events-reference
 };

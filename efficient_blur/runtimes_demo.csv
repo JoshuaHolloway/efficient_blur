@@ -1,3 +1,23 @@
 All stats are averaged over 2-runs
 N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime variance,FPS [frames/s.],cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
 258,258,3,1,2963.5,163.5,416.5,1.18582e+07,396288,396288,131072,393216,132096
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
+All stats are averaged over 2-runs
+N_zp,T,K,tiles (per dim),Runtime [micro-s./frame],Runtime std,FPS ,cycle-count [clock-tics/frame],adds,memory-reads,memory-writes,buffer-reads,buffer-writes
